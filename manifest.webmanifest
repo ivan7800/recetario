@@ -1,0 +1,31 @@
+{
+  "name": "Mi Recetario PRO",
+  "short_name": "Recetario",
+  "description": "Recetario local con IndexedDB, planificador semanal, lista de la compra, PWA offline sin CDN y catálogo mundial ampliado.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8f1e7",
+  "theme_color": "#c46a32",
+  "lang": "es",
+  "categories": [
+    "food",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

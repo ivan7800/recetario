@@ -1,0 +1,3119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Mi Recetario PRO</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#c46a32" />
+  <meta name="description" content="Recetario personal con cocinas del mundo, sugeridor inteligente y PWA offline." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Recetario" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <style>
+    :root {
+      --bg:#f8f1e7; --bg-soft:#fbf4ea; --paper:#fffaf2; --paper-2:#fff3df;
+      --text:#2d241c; --muted:#74695e; --primary:#c46a32; --primary-dark:#9f4f22;
+      --accent:#5f8d5a; --danger:#b64035; --warning:#d99a2b; --border:#ead8bf;
+      --input:#fffdf8; --shadow:0 12px 28px rgba(66,42,21,.12);
+      --radius:20px; --radius-sm:12px;
+      --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    [data-theme="dark"] {
+      --bg:#1d1712; --bg-soft:#251d16; --paper:#2b2118; --paper-2:#362719;
+      --text:#f8ead8; --muted:#cdbba7; --primary:#e28343; --primary-dark:#bf642c;
+      --accent:#8fbc83; --danger:#e1665c; --warning:#e5ad43; --border:#4a3828;
+      --input:#211811; --shadow:0 12px 32px rgba(0,0,0,.35);
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:var(--font); background:radial-gradient(circle at top left,rgba(196,106,50,.16),transparent 32rem),linear-gradient(135deg,var(--bg-soft) 0%,var(--bg) 100%); color:var(--text); min-height:100vh; transition:background .25s,color .25s; }
+    button,input,select,textarea { font:inherit; }
+    button { cursor:pointer; border:0; }
+    .app { max-width:1480px; margin:0 auto; padding:24px; }
+    header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:24px; }
+    .brand { display:flex; gap:16px; align-items:center; }
+    .logo { width:64px; height:64px; border-radius:22px; background:linear-gradient(135deg,var(--primary),var(--warning)); display:grid; place-items:center; color:#fff; font-size:32px; box-shadow:var(--shadow); flex:0 0 auto; }
+    h1 { margin:0; font-size:clamp(2rem,4vw,3.5rem); line-height:1; letter-spacing:-.06em; }
+    .subtitle { margin:8px 0 0; color:var(--muted); max-width:700px; line-height:1.5; }
+    .stats { display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end; }
+    .stat { background:var(--paper); border:1px solid var(--border); border-radius:999px; padding:10px 16px; box-shadow:0 6px 18px rgba(66,42,21,.08); color:var(--muted); white-space:nowrap; }
+    .stat strong { color:var(--text); }
+    .notice { display:none; background:var(--paper); border:1px solid var(--warning); color:var(--text); border-radius:var(--radius); padding:14px 16px; margin-bottom:18px; box-shadow:var(--shadow); align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .notice.show { display:flex; }
+    .toolbar { background:var(--paper); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; display:flex; flex-direction:column; gap:10px; margin-bottom:24px; box-shadow:var(--shadow); position:sticky; top:12px; z-index:20; }
+    .toolbar-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .toolbar-row.filters { flex-wrap:nowrap; }
+    .toolbar-row.filters .search { flex:2 1 200px; min-width:0; }
+    .toolbar-row.filters select { flex:1 1 140px; min-width:0; }
+    .search,select,input,textarea { width:100%; border:1px solid var(--border); border-radius:14px; padding:12px 14px; background:var(--input); color:var(--text); outline:none; transition:border .2s,box-shadow .2s,background .2s; }
+    .search:focus,select:focus,input:focus,textarea:focus { border-color:rgba(196,106,50,.75); box-shadow:0 0 0 4px rgba(196,106,50,.12); }
+    :focus-visible { outline:3px solid var(--primary); outline-offset:2px; }
+    .toolbar-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start; }
+    .btn { padding:12px 16px; border-radius:14px; background:var(--paper-2); color:var(--text); border:1px solid var(--border); font-weight:700; transition:transform .16s,box-shadow .16s,background .16s; display:inline-flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; min-height:44px; min-width:44px; }
+    .btn:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(66,42,21,.16); }
+    .btn.primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .btn.primary:hover { background:var(--primary-dark); }
+    .btn.green { background:var(--accent); color:#10200e; border-color:var(--accent); }
+    .btn.danger { background:var(--danger); color:#fff; border-color:var(--danger); }
+    .btn.ghost { background:transparent; }
+    .btn.world { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-color:#6366f1; }
+    .btn.world:hover { background:linear-gradient(135deg,#4f46e5,#7c3aed); }
+    .btn.inspire { background:linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; border-color:#f59e0b; }
+    .btn.inspire:hover { background:linear-gradient(135deg,#d97706,#dc2626); }
+    .btn:disabled { opacity:.45; pointer-events:none; }
+    .layout { display:grid; grid-template-columns:minmax(0,1fr) 430px; gap:24px; align-items:start; }
+    .recipes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+    .recipe-card { background:var(--paper); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:0 8px 22px rgba(66,42,21,.09); transition:transform .18s,box-shadow .18s; position:relative; overflow:hidden; }
+    .recipe-card::before { content:""; position:absolute; inset:0 0 auto 0; height:5px; background:linear-gradient(90deg,var(--primary),var(--warning),var(--accent)); opacity:.9; }
+    .recipe-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+    .recipe-image { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:16px; border:1px solid var(--border); background:var(--paper-2); margin-top:8px; }
+    .image-placeholder { width:100%; aspect-ratio:16/9; border-radius:16px; border:1px dashed var(--border); background:var(--paper-2); margin-top:8px; display:grid; place-items:center; color:var(--muted); font-size:2rem; }
+    .card-top { display:flex; justify-content:space-between; gap:12px; align-items:start; }
+    .recipe-card h2 { margin:8px 0 6px; font-size:1.35rem; letter-spacing:-.03em; }
+    .favorite-btn { width:42px; height:42px; border-radius:999px; background:var(--paper-2); border:1px solid var(--border); color:var(--warning); font-size:20px; flex:0 0 auto; }
+    .favorite-btn.active { background:#ffe0a6; color:#7b4a00; }
+    [data-theme="dark"] .favorite-btn.active { background:#5a3812; color:#ffd37a; }
+    .meta { display:flex; gap:8px; flex-wrap:wrap; color:var(--muted); font-size:.92rem; margin:10px 0; }
+    .pill { display:inline-flex; align-items:center; gap:6px; background:var(--paper-2); border:1px solid var(--border); border-radius:999px; padding:6px 10px; color:var(--muted); font-size:.88rem; }
+    .tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .tag { background:rgba(95,141,90,.16); color:var(--accent); border:1px solid rgba(95,141,90,.28); border-radius:999px; padding:5px 9px; font-size:.82rem; font-weight:700; }
+    .card-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+    .side-panel { background:var(--paper); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; position:sticky; top:112px; max-height:calc(100vh - 136px); overflow:auto; }
+    .side-panel h2 { margin:0 0 14px; letter-spacing:-.03em; }
+    .form-grid { display:grid; gap:12px; }
+    .two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    label { display:grid; gap:6px; color:var(--muted); font-size:.92rem; font-weight:700; }
+    textarea { min-height:96px; resize:vertical; }
+    .ingredient-row { display:grid; grid-template-columns:.8fr 1fr 1.8fr auto; gap:8px; align-items:center; margin-bottom:8px; }
+    .small-btn { min-width:42px; min-height:42px; border-radius:12px; background:var(--paper-2); border:1px solid var(--border); font-weight:900; color:var(--danger); }
+    .empty { background:var(--paper); border:2px dashed var(--border); border-radius:var(--radius); padding:44px 24px; text-align:center; color:var(--muted); }
+    .empty-icon { font-size:56px; margin-bottom:12px; }
+    .detail { background:var(--paper); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-bottom:24px; }
+    .detail h2 { margin:0; font-size:clamp(1.8rem,4vw,2.6rem); letter-spacing:-.05em; }
+    .detail-section { margin-top:20px; }
+    .detail-section h3 { margin:0 0 10px; }
+    .ingredients-list,.steps-list,.shopping-list { padding-left:22px; line-height:1.75; }
+    .scale-box,.timer-box { background:var(--paper-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin:16px 0; display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center; }
+    .timer-display { font-size:clamp(2rem,8vw,5rem); font-weight:900; letter-spacing:-.06em; text-align:center; margin:18px 0; }
+    .export-row { background:var(--paper-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .export-row strong { flex:1 1 100%; color:var(--muted); font-size:.88rem; margin-bottom:2px; }
+    /* ── SHARE PANEL ── */
+    .share-panel { background:var(--paper-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-top:14px; }
+    .share-panel-title { font-weight:700; font-size:.88rem; color:var(--muted); margin:0 0 10px; display:flex; align-items:center; gap:6px; }
+    .share-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(108px,1fr)); gap:8px; }
+    .share-btn { display:flex; flex-direction:column; align-items:center; gap:5px; padding:11px 6px; border-radius:14px; background:var(--paper); border:1px solid var(--border); font-size:.77rem; font-weight:700; color:var(--text); cursor:pointer; transition:transform .15s,box-shadow .15s; min-height:68px; }
+    .share-btn:hover { transform:translateY(-2px); box-shadow:0 6px 14px rgba(66,42,21,.14); }
+    .share-btn .si { font-size:1.55rem; line-height:1; }
+    .share-btn.s-wa   { border-color:#25d366; } .share-btn.s-wa:hover   { background:#e6fdf0; }
+    .share-btn.s-tg   { border-color:#229ed9; } .share-btn.s-tg:hover   { background:#e6f4fc; }
+    .share-btn.s-mail { border-color:var(--primary); } .share-btn.s-mail:hover { background:#fff1e6; }
+    .share-btn.s-img  { border-color:var(--accent); }  .share-btn.s-img:hover  { background:#edf6ec; }
+    .share-btn.s-qr   { border-color:#8b5cf6; } .share-btn.s-qr:hover   { background:#f3f0ff; }
+    .share-btn.s-link { border-color:var(--warning); } .share-btn.s-link:hover { background:#fffbe6; }
+    .share-btn.s-nat  { border-color:var(--primary); background:var(--primary); color:#fff; }
+    .share-btn.s-nat:hover { background:var(--primary-dark); }
+    [data-theme="dark"] .share-btn.s-wa:hover   { background:#0d3320; }
+    [data-theme="dark"] .share-btn.s-tg:hover   { background:#0d2433; }
+    [data-theme="dark"] .share-btn.s-mail:hover { background:#3a1e0e; }
+    [data-theme="dark"] .share-btn.s-img:hover  { background:#1a2e19; }
+    [data-theme="dark"] .share-btn.s-qr:hover   { background:#1e1533; }
+    [data-theme="dark"] .share-btn.s-link:hover { background:#2e2208; }
+    /* Botón rápido en tarjeta */
+    .card-share-btn { position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:999px; background:var(--paper); border:1px solid var(--border); display:grid; place-items:center; font-size:.95rem; z-index:2; opacity:0; transition:opacity .15s; box-shadow:0 2px 8px rgba(0,0,0,.12); }
+    .recipe-card:hover .card-share-btn { opacity:1; }
+    /* QR modal body */
+    .qr-wrap { display:flex; flex-direction:column; align-items:center; gap:16px; padding:8px 0; }
+    .qr-wrap canvas { border-radius:12px; border:4px solid #fff; }
+    /* Canvas preview tarjeta imagen */
+    .img-card-preview { text-align:center; margin-top:12px; }
+    .img-card-preview canvas { max-width:100%; border-radius:14px; border:1px solid var(--border); box-shadow:var(--shadow); }
+    .modal { position:fixed; inset:0; background:rgba(31,22,14,.62); display:none; align-items:center; justify-content:center; padding:20px; z-index:100; backdrop-filter:blur(2px); }
+    .modal.open { display:flex; }
+    .modal-card { background:var(--paper); border-radius:28px; border:1px solid var(--border); box-shadow:0 30px 80px rgba(0,0,0,.35); width:min(980px,100%); max-height:90vh; overflow:auto; padding:24px; }
+    .modal-top { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:18px; }
+    .modal-top h2 { margin:0; }
+    .cook-step { background:var(--paper-2); border:1px solid var(--border); border-radius:24px; padding:clamp(20px,5vw,48px); font-size:clamp(1.5rem,4vw,3rem); line-height:1.25; min-height:260px; display:grid; place-items:center; text-align:center; }
+    .cook-controls { margin-top:18px; display:flex; gap:12px; justify-content:space-between; flex-wrap:wrap; align-items:center; }
+    .recipe-checkbox { display:flex; align-items:center; gap:10px; background:var(--paper-2); border:1px solid var(--border); border-radius:14px; padding:10px 12px; margin-bottom:8px; color:var(--text); font-weight:700; cursor:pointer; }
+    .recipe-checkbox input { width:auto; accent-color:var(--primary); }
+    .file-input { display:none; }
+    .planner-grid { display:grid; grid-template-columns:repeat(7,minmax(150px,1fr)); gap:12px; }
+    .day-card { background:var(--paper-2); border:1px solid var(--border); border-radius:16px; padding:12px; }
+    .day-card h3 { margin:0 0 10px; }
+    .shopping-section { background:var(--paper-2); border:1px solid var(--border); border-radius:16px; padding:12px; margin:12px 0; }
+    .cat-list { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+    .cat-item { display:flex; align-items:center; gap:8px; background:var(--paper-2); border:1px solid var(--border); border-radius:12px; padding:8px 10px; }
+    .cat-item input { flex:1; background:transparent; border:none; color:var(--text); font-weight:700; padding:0; min-height:0; border-radius:0; }
+    .cat-item input:focus { box-shadow:none; border-bottom:1px solid var(--primary); }
+    .sec-list { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+    .sec-item { background:var(--paper-2); border:1px solid var(--border); border-radius:12px; padding:10px; }
+    .sec-item-top { display:flex; align-items:center; gap:8px; }
+    .sec-item-top input { flex:1; background:transparent; border:none; color:var(--text); font-weight:700; padding:0; min-height:0; border-radius:0; }
+    .sec-item-top input:focus { box-shadow:none; border-bottom:1px solid var(--primary); }
+    .sec-keywords { font-size:.82rem; color:var(--muted); margin-top:6px; }
+    .sec-keywords input { font-size:.82rem; width:100%; margin-top:4px; }
+    .toast { position:fixed; right:20px; bottom:20px; background:var(--text); color:var(--paper); padding:12px 16px; border-radius:14px; box-shadow:var(--shadow); opacity:0; transform:translateY(10px); transition:opacity .2s,transform .2s; z-index:200; max-width:380px; line-height:1.4; pointer-events:none; }
+    .toast.show { opacity:1; transform:translateY(0); }
+
+    /* ── MUNDO ── */
+    .world-filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .cuisine-btn { padding:8px 14px; border-radius:999px; background:var(--paper-2); border:1px solid var(--border); font-size:.88rem; font-weight:700; cursor:pointer; transition:background .15s,color .15s; }
+    .cuisine-btn.active,.cuisine-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .world-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+    .world-card { background:var(--paper); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:0 6px 16px rgba(66,42,21,.08); transition:transform .18s,box-shadow .18s; position:relative; overflow:hidden; }
+    .world-card::before { content:""; position:absolute; inset:0 0 auto 0; height:4px; background:linear-gradient(90deg,#6366f1,#8b5cf6,#ec4899); }
+    .world-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+    .world-card h3 { margin:4px 0 8px; font-size:1.1rem; letter-spacing:-.02em; }
+    .cuisine-flag { font-size:1.6rem; margin-bottom:4px; display:block; }
+    .world-meta { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+    .world-pill { display:inline-flex; align-items:center; gap:4px; background:rgba(99,102,241,.1); border:1px solid rgba(99,102,241,.2); border-radius:999px; padding:4px 8px; font-size:.8rem; color:#6366f1; }
+    [data-theme="dark"] .world-pill { color:#a5b4fc; background:rgba(99,102,241,.15); border-color:rgba(99,102,241,.25); }
+    .world-desc { font-size:.88rem; color:var(--muted); margin:0 0 12px; line-height:1.5; }
+    .world-actions { display:flex; gap:8px; }
+    .world-counter { grid-column:1/-1; color:var(--muted); font-weight:800; background:var(--paper-2); border:1px solid var(--border); border-radius:14px; padding:10px 12px; }
+    .world-load-more { grid-column:1/-1; display:flex; justify-content:center; padding:8px 0 4px; }
+
+    /* ── INSPIRACIÓN ── */
+    .inspire-filters { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px; }
+    .inspire-result { background:var(--paper-2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-top:12px; }
+    .inspire-result h3 { margin:0 0 8px; font-size:1.3rem; }
+    .inspire-none { text-align:center; padding:32px; color:var(--muted); }
+    .inspire-none .empty-icon { font-size:48px; display:block; margin-bottom:8px; }
+
+    @media(max-width:1220px) { .planner-grid{grid-template-columns:repeat(2,minmax(160px,1fr));} .inspire-filters{grid-template-columns:1fr 1fr;} }
+    @media(max-width:1050px) { .layout{grid-template-columns:1fr;} .side-panel{position:static;max-height:none;} }
+    @media(max-width:760px) {
+      .app{padding:16px;} header{display:grid;} .brand{align-items:flex-start;}
+      .logo{width:52px;height:52px;font-size:26px;border-radius:18px;}
+      .stats{justify-content:flex-start;}
+      .toolbar{position:static;}
+      .toolbar-row.filters{flex-wrap:wrap;}
+      .toolbar-row.filters .search{flex:1 1 100%;}
+      .toolbar-row.filters select{flex:1 1 calc(50% - 5px);}
+      .toolbar-actions .btn{flex:1 1 130px;}
+      .two{grid-template-columns:1fr;}
+      .ingredient-row{grid-template-columns:1fr 1fr;}
+      .ingredient-row input:nth-child(3){grid-column:1/-1;}
+      .ingredient-row .small-btn{grid-column:1/-1;}
+      .scale-box,.timer-box{grid-template-columns:1fr;}
+      .card-actions .btn{flex:1 1 120px;}
+      .planner-grid{grid-template-columns:1fr;}
+      .inspire-filters{grid-template-columns:1fr;}
+      .world-grid{grid-template-columns:1fr;}
+    }
+
+    @media(hover:none) { .card-share-btn { opacity:1; } }
+    @media(max-width:760px) {
+      .modal { align-items:flex-start; padding:10px; }
+      .modal-card { width:100%; max-height:calc(100dvh - 20px); border-radius:22px; padding:16px; }
+      .modal-top { align-items:flex-start; }
+      .modal-top .btn { flex:0 0 auto; }
+      .toast { right:12px; left:12px; bottom:12px; max-width:none; }
+    }
+    @media print {
+      @page{size:A4;margin:18mm;}
+      body{background:#fff!important;color:#111!important;}
+      header,.toolbar,.side-panel,.recipes-grid,.empty,.modal,.toast,.no-print,.notice{display:none!important;}
+      .app{max-width:none;padding:0;} .layout{display:block;}
+      .detail{display:block!important;box-shadow:none!important;border:0!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important;}
+      .detail h2{font-size:28pt;margin-bottom:8mm;}
+      .pill,.tag{border:1px solid #ddd!important;background:#fff!important;color:#111!important;}
+      .scale-box,.timer-box,.btn,.export-row{display:none!important;}
+      .ingredients-list,.steps-list{font-size:12pt;line-height:1.6;}
+    }
+  </style>
+</head>
+<body>
+
+<datalist id="unitOptions">
+  <option value="g"><option value="kg"><option value="ml"><option value="l">
+  <option value="ud"><option value="diente"><option value="dientes">
+  <option value="cucharadita"><option value="cucharada"><option value="pizca">
+  <option value="sobre"><option value="lata"><option value="paquete">
+  <option value="taza"><option value="vaso"><option value="medida"><option value="medidas">
+  <option value="rama"><option value="hoja"><option value="loncha">
+  <option value="al gusto"><option value="rodaja"><option value="puñado"><option value="chorrito">
+</datalist>
+
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">🍳</div>
+      <div>
+        <h1>Mi Recetario PRO</h1>
+        <p class="subtitle">Guarda recetas, explora un catálogo mundial ampliado hasta 1.000.000 recetas virtuales offline, planifica la semana y genera la lista de la compra. Todo local, instalable, con IndexedDB y sin depender de servidores externos.</p>
+      </div>
+    </div>
+    <div class="stats" aria-live="polite">
+      <div class="stat"><strong id="totalRecipes">0</strong> mis recetas</div>
+      <div class="stat"><strong id="favoriteRecipes">0</strong> favoritas</div>
+    </div>
+  </header>
+
+  <div class="notice" id="pwaNotice" role="status">
+    <span id="pwaNoticeText">App lista para usar offline.</span>
+    <button class="btn" id="installBtn" hidden>Instalar app</button>
+  </div>
+  <div class="notice" id="backupNotice" role="status">
+    <span id="backupNoticeText">Hace tiempo que no haces backup.</span>
+    <button class="btn primary" id="backupNoticeBtn">Hacer backup</button>
+  </div>
+
+  <section class="toolbar" aria-label="Herramientas principales">
+    <!-- Fila 1: búsqueda y filtros -->
+    <div class="toolbar-row filters">
+      <input id="searchInput" class="search" type="search" placeholder="Buscar por nombre, ingrediente, etiqueta..." aria-label="Buscar recetas" />
+      <select id="categoryFilter" aria-label="Filtrar por categoría"><option value="Todas">Todas las categorías</option></select>
+      <select id="sortSelect" aria-label="Ordenar recetas">
+        <option value="recent">Más recientes</option>
+        <option value="oldest">Más antiguas</option>
+        <option value="az">Nombre A-Z</option>
+        <option value="za">Nombre Z-A</option>
+        <option value="favorites">Favoritas primero</option>
+        <option value="category">Categoría</option>
+        <option value="difficulty">Dificultad</option>
+      </select>
+    </div>
+    <!-- Fila 2: acciones -->
+    <div class="toolbar-row">
+      <div class="toolbar-actions">
+        <button class="btn primary" id="newRecipeBtn">➕ Crear receta</button>
+        <button class="btn inspire" id="inspireBtn">🎲 ¿Qué cocino?</button>
+        <button class="btn world" id="worldBtn">🌍 Cocinas del mundo</button>
+        <button class="btn green" id="shoppingBtn">🛒 Lista compra</button>
+        <button class="btn" id="plannerBtn">📅 Semana</button>
+        <button class="btn" id="exampleBtn">✨ Ejemplos</button>
+        <button class="btn" id="exportBtn">💾 Backup JSON</button>
+        <button class="btn" id="importBtn">📂 Restaurar JSON</button>
+        <button class="btn" id="exportTxtBtn">📝 TXT</button>
+        <button class="btn" id="categoriesBtn">🗂 Categorías</button>
+        <button class="btn" id="sectionsBtn">🛍 Secciones</button>
+        <button class="btn" id="themeToggleBtn" aria-label="Cambiar tema">🌙</button>
+        <input id="importFile" class="file-input" type="file" accept="application/json,.json" />
+      </div>
+    </div>
+  </section>
+
+  <main class="layout">
+    <section>
+      <div id="detailView"></div>
+      <div id="recipesGrid" class="recipes-grid" role="list" aria-label="Recetas guardadas"></div>
+      <div id="emptyState" class="empty" hidden>
+        <div class="empty-icon">📖</div>
+        <h2>Aún no hay recetas aquí</h2>
+        <p>Crea tu primera receta, carga ejemplos, o explora las <strong>Cocinas del mundo</strong> para añadir recetas de todo el planeta con un clic.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px;">
+          <button class="btn primary" id="emptyNewBtn">Crear receta</button>
+          <button class="btn world" id="emptyWorldBtn">🌍 Explorar cocinas</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side-panel" id="formPanel" aria-label="Formulario de receta">
+      <h2 id="formTitle">Nueva receta</h2>
+      <form id="recipeForm" class="form-grid" novalidate>
+        <input type="hidden" id="recipeId" />
+        <label for="nameInput">Nombre de la receta *
+          <input id="nameInput" type="text" placeholder="Ej. Croquetas de la abuela" required autocomplete="off" />
+        </label>
+        <div class="two">
+          <label for="categoryInput">Categoría<select id="categoryInput" aria-label="Categoría"></select></label>
+          <label for="difficultyInput">Dificultad
+            <select id="difficultyInput"><option>Fácil</option><option>Media</option><option>Difícil</option></select>
+          </label>
+        </div>
+        <div class="two">
+          <label for="timeInput">Tiempo<input id="timeInput" type="text" placeholder="Ej. 45 min" /></label>
+          <label for="servingsInput">Raciones<input id="servingsInput" type="number" min="1" step="1" value="2" /></label>
+        </div>
+        <label for="imageInput">Imagen (archivo local)
+          <input id="imageInput" type="file" accept="image/*" />
+          <small class="subtitle">Se comprime y guarda localmente.</small>
+        </label>
+        <label for="imageUrlInput">Imagen por URL
+          <input id="imageUrlInput" type="url" placeholder="Desactivado para mantener privacidad/offline" autocomplete="off" />
+          <small class="subtitle">Para una app 100% offline, sube una imagen local. Las URLs externas no se guardan.</small>
+        </label>
+        <div style="display:flex;gap:8px;margin-top:-4px;">
+          <button type="button" class="btn ghost" id="searchImageBtn" style="font-size:.88rem;padding:8px 12px;">🔍 Buscar en Google</button>
+        </div>
+        <label>Ingredientes *
+          <small class="subtitle">Cantidad · Unidad (con sugerencias) · Nombre del ingrediente.</small>
+          <div id="ingredientsContainer" role="list"></div>
+          <button type="button" class="btn ghost" id="addIngredientBtn">➕ Añadir ingrediente</button>
+        </label>
+        <label for="stepsInput">Pasos de preparación
+          <textarea id="stepsInput" placeholder="Un paso por línea.&#10;Ej. Sofríe la cebolla.&#10;Hornea 35 min."></textarea>
+        </label>
+        <label for="notesInput">Notas personales
+          <textarea id="notesInput" placeholder="Trucos, variantes, recuerdos familiares..."></textarea>
+        </label>
+        <label for="tagsInput">Etiquetas
+          <input id="tagsInput" type="text" placeholder="Ej. rápido, barato, horno, familiar" />
+        </label>
+        <div class="two">
+          <button type="submit" class="btn primary">💾 Guardar</button>
+          <button type="button" class="btn" id="resetFormBtn">Limpiar</button>
+        </div>
+      </form>
+    </aside>
+  </main>
+</div>
+
+<!-- MODAL MODO COCINA -->
+<div class="modal" id="cookModal" role="dialog" aria-modal="true" aria-labelledby="cookTitle">
+  <div class="modal-card">
+    <div class="modal-top">
+      <h2 id="cookTitle">Modo cocina</h2>
+      <button class="btn danger" id="closeCookBtn">Cerrar</button>
+    </div>
+    <div class="cook-step" id="cookStepText"></div>
+    <div class="timer-box">
+      <div><strong>Temporizador</strong><p class="subtitle">Detecta minutos en el paso o escríbelos manualmente.</p></div>
+      <div style="display:flex;gap:8px;">
+        <input id="timerMinutesInput" type="number" min="1" step="1" placeholder="min" style="width:90px;" aria-label="Minutos" />
+        <button class="btn primary" id="startTimerBtn">Iniciar</button>
+      </div>
+    </div>
+    <div class="timer-display" id="timerDisplay" aria-live="polite">00:00</div>
+    <div class="card-actions">
+      <button class="btn" id="pauseTimerBtn">Pausar</button>
+      <button class="btn" id="resetTimerBtn">Reiniciar</button>
+    </div>
+    <div class="cook-controls">
+      <button class="btn" id="prevStepBtn">⬅ Anterior</button>
+      <strong id="cookProgress">Paso 1 de 1</strong>
+      <button class="btn primary" id="nextStepBtn">Siguiente ➜</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LISTA DE LA COMPRA -->
+<div class="modal" id="shoppingModal" role="dialog" aria-modal="true" aria-labelledby="shoppingTitle">
+  <div class="modal-card">
+    <div class="modal-top">
+      <h2 id="shoppingTitle">🛒 Lista de la compra</h2>
+      <button class="btn danger" id="closeShoppingBtn">Cerrar</button>
+    </div>
+    <p class="subtitle">Selecciona las recetas. La lista se agrupa por secciones de supermercado.</p>
+    <div id="shoppingRecipeList" role="group"></div>
+    <div class="card-actions">
+      <button class="btn primary" id="generateShoppingBtn">Generar lista</button>
+      <button class="btn" id="copyShoppingBtn">Copiar texto</button>
+      <button class="btn" id="printShoppingBtn">Imprimir</button>
+    </div>
+    <div id="shoppingResult" class="detail-section" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- MODAL PLANIFICADOR -->
+<div class="modal" id="plannerModal" role="dialog" aria-modal="true" aria-labelledby="plannerTitle">
+  <div class="modal-card">
+    <div class="modal-top">
+      <h2 id="plannerTitle">📅 Planificador semanal</h2>
+      <button class="btn danger" id="closePlannerBtn">Cerrar</button>
+    </div>
+    <p class="subtitle">Elige una receta para cada día. Se guarda automáticamente.</p>
+    <div class="planner-grid" id="plannerGrid" role="list"></div>
+    <div class="card-actions">
+      <button class="btn primary" id="savePlannerBtn">Guardar semana</button>
+      <button class="btn" id="clearPlannerBtn">Vaciar semana</button>
+      <button class="btn green" id="shoppingFromPlannerBtn">🛒 Compra semanal</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORÍAS -->
+<div class="modal" id="categoriesModal" role="dialog" aria-modal="true" aria-labelledby="categoriesModalTitle">
+  <div class="modal-card" style="max-width:520px;">
+    <div class="modal-top">
+      <h2 id="categoriesModalTitle">🗂 Gestionar categorías</h2>
+      <button class="btn danger" id="closeCategoriesBtn">Cerrar</button>
+    </div>
+    <p class="subtitle">Renombra o elimina categorías. Las recetas con categorías eliminadas pasan a "Otros". "Otros" no se puede eliminar.</p>
+    <div class="cat-list" id="catList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <input id="newCatInput" type="text" placeholder="Nueva categoría..." style="flex:1;" />
+      <button class="btn primary" id="addCatBtn">Añadir</button>
+    </div>
+    <div class="card-actions" style="margin-top:16px;">
+      <button class="btn primary" id="saveCategoriesBtn">💾 Guardar categorías</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SECCIONES -->
+<div class="modal" id="sectionsModal" role="dialog" aria-modal="true" aria-labelledby="sectionsModalTitle">
+  <div class="modal-card" style="max-width:560px;">
+    <div class="modal-top">
+      <h2 id="sectionsModalTitle">🛍 Secciones de la compra</h2>
+      <button class="btn danger" id="closeSectionsBtn">Cerrar</button>
+    </div>
+    <p class="subtitle">Palabras clave separadas por comas. Si un ingrediente las contiene, va a esa sección.</p>
+    <div class="sec-list" id="secList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <input id="newSecInput" type="text" placeholder="Nueva sección..." style="flex:1;" />
+      <button class="btn primary" id="addSecBtn">Añadir</button>
+    </div>
+    <div class="card-actions" style="margin-top:16px;">
+      <button class="btn primary" id="saveSectionsBtn">💾 Guardar secciones</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COCINAS DEL MUNDO -->
+<div class="modal" id="worldModal" role="dialog" aria-modal="true" aria-labelledby="worldModalTitle">
+  <div class="modal-card" style="max-width:1100px;">
+    <div class="modal-top">
+      <h2 id="worldModalTitle">🌍 Cocinas del mundo · 1.000.000+</h2>
+      <button class="btn danger" id="closeWorldBtn">Cerrar</button>
+    </div>
+    <p class="subtitle">Catálogo mundial definitivo: recetas base seleccionadas y un motor offline capaz de crear hasta 1.000.000 recetas virtuales de inspiración internacional. Haz clic en cualquiera para ver el detalle y guardarla.</p>
+    <input id="worldSearch" class="search" type="search" placeholder="Buscar por nombre, ingrediente, cocina..." style="margin-bottom:14px;" aria-label="Buscar receta mundial" />
+    <div class="world-filters" id="worldFilters" role="group" aria-label="Filtrar por cocina"></div>
+    <div class="world-grid" id="worldGrid" role="list"></div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE RECETA MUNDIAL -->
+<div class="modal" id="worldDetailModal" role="dialog" aria-modal="true" aria-labelledby="worldDetailTitle">
+  <div class="modal-card" style="max-width:700px;">
+    <div class="modal-top">
+      <h2 id="worldDetailTitle"></h2>
+      <button class="btn danger" id="closeWorldDetailBtn">Cerrar</button>
+    </div>
+    <div id="worldDetailBody"></div>
+    <div class="card-actions" style="margin-top:18px;">
+      <button class="btn primary" id="addWorldRecipeBtn">➕ Añadir a mi recetario</button>
+      <button class="btn green" id="cookWorldRecipeBtn">👨‍🍳 Cocinar ahora</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ¿QUÉ COCINO HOY? -->
+<div class="modal" id="inspireModal" role="dialog" aria-modal="true" aria-labelledby="inspireTitle">
+  <div class="modal-card" style="max-width:680px;">
+    <div class="modal-top">
+      <h2 id="inspireTitle">🎲 ¿Qué cocino hoy?</h2>
+      <button class="btn danger" id="closeInspireBtn">Cerrar</button>
+    </div>
+    <p class="subtitle">Dinos cuánto tiempo tienes y qué te apetece. Buscamos en tus recetas <strong>y</strong> en las cocinas del mundo.</p>
+    <div class="inspire-filters">
+      <label for="inspireTime">⏱ Tiempo disponible
+        <select id="inspireTime">
+          <option value="">Cualquiera</option>
+          <option value="quick">Menos de 20 min</option>
+          <option value="medium">20 – 45 min</option>
+          <option value="long">Más de 45 min</option>
+        </select>
+      </label>
+      <label for="inspireDiff">🔥 Dificultad
+        <select id="inspireDiff">
+          <option value="">Cualquiera</option>
+          <option value="Fácil">Fácil</option>
+          <option value="Media">Media</option>
+          <option value="Difícil">Difícil</option>
+        </select>
+      </label>
+      <label for="inspireSource">📚 Buscar en
+        <select id="inspireSource">
+          <option value="all">Mis recetas + mundo</option>
+          <option value="mine">Solo mis recetas</option>
+          <option value="world">Solo cocinas del mundo</option>
+        </select>
+      </label>
+    </div>
+    <label for="inspireIngredient" style="margin-bottom:14px;">🥕 Tengo este ingrediente (opcional)
+      <input id="inspireIngredient" type="text" placeholder="Ej. pollo, pasta, tomate..." />
+    </label>
+    <div class="card-actions" style="margin-bottom:4px;">
+      <button class="btn inspire" id="surpriseMeBtn" style="flex:1;">🎲 ¡Sorpréndeme!</button>
+      <button class="btn primary" id="findRecipesBtn" style="flex:1;">🔍 Ver opciones</button>
+    </div>
+    <div id="inspireResult" aria-live="polite"></div>
+  </div>
+</div>
+
+
+<!-- MODAL QR -->
+<div class="modal" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+  <div class="modal-card" style="max-width:420px;">
+    <div class="modal-top">
+      <h2 id="qrModalTitle">🔗 Enlace compartible</h2>
+      <button class="btn danger" id="closeQrBtn">Cerrar</button>
+    </div>
+    <p class="subtitle" id="qrModalDesc">Comparte este enlace directo o descarga una tarjeta visual. No se envía la receta a servidores externos.</p>
+    <div class="qr-wrap" id="qrWrap"></div>
+    <div class="card-actions" style="margin-top:16px;">
+      <button class="btn primary" id="downloadQrBtn">⬇️ Descargar tarjeta</button>
+      <button class="btn" id="copyQrLinkBtn">🔗 Copiar enlace</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* ════════════════════════════════════════
+   STORAGE KEYS
+════════════════════════════════════════ */
+const STORAGE_KEY  = "miRecetarioPRO.recipes";
+const THEME_KEY    = "miRecetarioPRO.theme";
+const SORT_KEY     = "miRecetarioPRO.sort";
+const BACKUP_KEY   = "miRecetarioPRO.lastBackup";
+const PLANNER_KEY  = "miRecetarioPRO.weekPlanner";
+const CATS_KEY     = "miRecetarioPRO.categories";
+const SECTIONS_KEY = "miRecetarioPRO.foodSections";
+
+const DB_NAME    = "miRecetarioPRO.indexeddb";
+const DB_VERSION = 1;
+const DB_STORE   = "recipes";
+let dbPromise = null;
+
+function openAppDB() {
+  if (!("indexedDB" in window)) return Promise.reject(new Error("IndexedDB no está disponible."));
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error("No se pudo abrir IndexedDB."));
+  });
+  return dbPromise;
+}
+async function dbGet(key, fallback = null) {
+  try {
+    const db = await openAppDB();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(DB_STORE, "readonly");
+      const req = tx.objectStore(DB_STORE).get(key);
+      req.onsuccess = () => resolve(req.result === undefined ? fallback : req.result);
+      req.onerror = () => reject(req.error);
+    });
+  } catch (err) { console.warn("[IndexedDB:get]", err); return fallback; }
+}
+async function dbSet(key, value) {
+  try {
+    const db = await openAppDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(DB_STORE, "readwrite");
+      tx.objectStore(DB_STORE).put(value, key);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    return true;
+  } catch (err) { console.warn("[IndexedDB:set]", err); return false; }
+}
+async function dbRemove(key) {
+  try {
+    const db = await openAppDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(DB_STORE, "readwrite");
+      tx.objectStore(DB_STORE).delete(key);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    return true;
+  } catch (err) { console.warn("[IndexedDB:remove]", err); return false; }
+}
+async function dbGetMigrated(key, fallback) {
+  const existing = await dbGet(key, undefined);
+  if (existing !== undefined) return existing;
+  try {
+    const legacy = localStorage.getItem(key);
+    if (legacy !== null) {
+      let parsed;
+      try { parsed = JSON.parse(legacy); }
+      catch { parsed = legacy; }
+      const migrated = await dbSet(key, parsed);
+      if (migrated) localStorage.removeItem(key);
+      return parsed;
+    }
+  } catch (err) { console.warn("[Migración localStorage]", key, err); }
+  return fallback;
+}
+async function loadRecipesFromIndexedDB() {
+  const existing = await dbGetMigrated(STORAGE_KEY, []);
+  return Array.isArray(existing) ? existing : [];
+}
+async function loadAppState() {
+  const loadedCats = await dbGetMigrated(CATS_KEY, [...DEFAULT_CATEGORIES]);
+  categories = Array.isArray(loadedCats) && loadedCats.length ? loadedCats.map(String).filter(Boolean) : [...DEFAULT_CATEGORIES];
+
+  const loadedSections = await dbGetMigrated(SECTIONS_KEY, structuredCloneSafe(DEFAULT_FOOD_SECTIONS));
+  foodSections = loadedSections && typeof loadedSections === "object" && !Array.isArray(loadedSections) && Object.keys(loadedSections).length
+    ? loadedSections
+    : structuredCloneSafe(DEFAULT_FOOD_SECTIONS);
+
+  const loadedPlanner = await dbGetMigrated(PLANNER_KEY, {});
+  plannerState = loadedPlanner && typeof loadedPlanner === "object" && !Array.isArray(loadedPlanner) ? loadedPlanner : {};
+
+  themePreference = String(await dbGetMigrated(THEME_KEY, "") || "");
+  sortPreference = String(await dbGetMigrated(SORT_KEY, "") || "");
+  lastBackupAt = String(await dbGetMigrated(BACKUP_KEY, "") || "");
+}
+
+/* ════════════════════════════════════════
+   DEFAULTS
+════════════════════════════════════════ */
+const DEFAULT_CATEGORIES = [
+  "Entrantes","Primeros","Segundos","Postres","Cenas rápidas",
+  "Salsas","Panes y masas","Recetas familiares","Otros"
+];
+
+const DEFAULT_FOOD_SECTIONS = {
+  "Verduras y fruta":  ["tomate","cebolla","ajo","patata","zanahoria","pimiento","lechuga","calabacín","berenjena","manzana","limón","naranja","plátano","perejil","albahaca","espinaca","pepino","champiñón","seta","jengibre","cilantro","aguacate"],
+  "Carne y pescado":   ["pollo","ternera","cerdo","pavo","jamón","bacon","atún","salmón","merluza","bacalao","gambas","carne","chorizo","salchicha","morcilla","sardina","mejillón","langostino","cordero","pato","panceta"],
+  "Lácteos y huevos":  ["leche","queso","yogur","mantequilla","nata","huevo","huevos","parmesano","mozzarella","crema","ricotta","feta","mascarpone","kéfir"],
+  "Despensa":          ["arroz","pasta","harina","azúcar","sal","aceite","vinagre","levadura","pan","lentejas","garbanzos","alubias","orégano","caldo","tomate frito","tomate triturado","maizena","quinoa","cuscús","fideos","tahini","miso","soja","tapioca"],
+  "Especias y salsas": ["pimienta","pimentón","curry","comino","canela","salsa","mostaza","mayonesa","ketchup","tabasco","nuez moscada","cúrcuma","cardamomo","clavo","wasabi","sriracha","harissa","achiote","gochujang","gochugaru"],
+  "Bebidas y otros":   ["agua","vino","cerveza","zumo","café","té","leche de coco","caldo de pollo","caldo de pescado","sake","mirin"],
+  "Otros":             []
+};
+
+const DAYS = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+
+const UNIT_ALIASES = {
+  "gramo":"g","gramos":"g","gr":"g","gr.":"g",
+  "kilo":"kg","kilos":"kg","kilogramo":"kg","kilogramos":"kg",
+  "mililitro":"ml","mililitros":"ml","ml.":"ml",
+  "litro":"l","litros":"l","l.":"l",
+  "unidad":"ud","unidades":"ud","u":"ud","uds":"ud","uds.":"ud",
+  "cdita":"cucharadita","cdta":"cucharadita","cucharaditas":"cucharadita",
+  "cda":"cucharada","cdas":"cucharada","cucharadas":"cucharada",
+  "diente de ajo":"diente","dientes de ajo":"dientes"
+};
+
+const INDIVISIBLE_UNITS = ["ud","diente","dientes","sobre","lata","paquete","rama","hoja","loncha","rodaja","puñado"];
+
+/* ════════════════════════════════════════
+   CATÁLOGO MUNDIAL — base + motor 1.000.000 offline
+════════════════════════════════════════ */
+const WORLD_RECIPES = [
+  /* ── ESPAÑOLA ── */
+  {id:"w1",cuisine:"Española",flag:"🇪🇸",name:"Gazpacho andaluz",time:"15 min",timeMin:15,diff:"Fácil",
+   desc:"Sopa fría de tomate, pimiento y pepino. Fresca y reconfortante en verano.",
+   tags:["verano","frío","vegetariana"],
+   ingredients:[{c:800,u:"g",i:"tomates maduros"},{c:1,u:"ud",i:"pepino"},{c:1,u:"ud",i:"pimiento verde"},{c:2,u:"dientes",i:"ajo"},{c:80,u:"ml",i:"aceite de oliva"},{c:30,u:"ml",i:"vinagre de Jerez"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Trocea todos los vegetales.","Bate con aceite, vinagre y sal hasta obtener una crema fina.","Cuela si prefieres textura suave.","Refrigera al menos 1 hora antes de servir."]},
+
+  {id:"w2",cuisine:"Española",flag:"🇪🇸",name:"Paella valenciana",time:"60 min",timeMin:60,diff:"Media",
+   desc:"El arroz con pollo, conejo y judías verdes más icónico del Mediterráneo.",
+   tags:["arroz","tradición","domingo"],
+   ingredients:[{c:400,u:"g",i:"arroz bomba"},{c:500,u:"g",i:"pollo troceado"},{c:300,u:"g",i:"conejo troceado"},{c:200,u:"g",i:"judías verdes"},{c:1,u:"ud",i:"tomate rallado"},{c:1,u:"cucharadita",i:"pimentón dulce"},{c:1,u:"pizca",i:"azafrán"},{c:1,u:"l",i:"caldo de pollo"},{c:80,u:"ml",i:"aceite de oliva"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Sofríe el pollo y el conejo en aceite hasta dorar.","Añade las judías y el tomate, sofríe 5 min.","Agrega el pimentón y el azafrán, remueve rápido.","Añade el arroz y mezcla bien.","Vierte el caldo caliente y distribuye uniformemente.","Cuece a fuego fuerte 8 min, luego suave 10 min sin remover.","Deja reposar tapado 5 min antes de servir."]},
+
+  {id:"w3",cuisine:"Española",flag:"🇪🇸",name:"Croquetas caseras de jamón",time:"90 min",timeMin:90,diff:"Media",
+   desc:"Crujientes por fuera, cremosas por dentro. Un clásico irresistible.",
+   tags:["aperitivo","frito","clásico"],
+   ingredients:[{c:100,u:"g",i:"mantequilla"},{c:120,u:"g",i:"harina"},{c:700,u:"ml",i:"leche"},{c:150,u:"g",i:"jamón serrano picado"},{c:2,u:"ud",i:"huevos"},{c:150,u:"g",i:"pan rallado"},{c:1,u:"pizca",i:"nuez moscada"},{c:1,u:"pizca",i:"sal"},{c:500,u:"ml",i:"aceite para freír"}],
+   steps:["Derrite la mantequilla, añade la harina y tuesta 2 min.","Agrega la leche caliente poco a poco removiendo sin parar.","Incorpora el jamón y la nuez moscada. Cuece hasta que la masa se despegue.","Extiende en una fuente y refrigera 3 h mínimo.","Forma las croquetas, pasa por huevo y pan rallado.","Fríe en aceite bien caliente hasta dorar. Escurre sobre papel."]},
+
+  {id:"w4",cuisine:"Española",flag:"🇪🇸",name:"Patatas bravas",time:"30 min",timeMin:30,diff:"Fácil",
+   desc:"Las tapas más pedidas de España, con salsa picante casera.",
+   tags:["tapa","frito","picante"],
+   ingredients:[{c:800,u:"g",i:"patatas"},{c:500,u:"ml",i:"aceite para freír"},{c:200,u:"ml",i:"tomate frito"},{c:1,u:"cucharadita",i:"pimentón picante"},{c:1,u:"cucharadita",i:"pimentón dulce"},{c:2,u:"dientes",i:"ajo"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Pela y trocea las patatas en dados. Fríe a fuego medio hasta cocer.","Sube el fuego para que queden crujientes. Escurre y sala.","Sofríe el ajo, añade tomate y pimentones. Cuece 10 min para la salsa.","Sirve las patatas con la salsa por encima."]},
+
+  {id:"w5",cuisine:"Española",flag:"🇪🇸",name:"Cocido madrileño",time:"180 min",timeMin:180,diff:"Media",
+   desc:"El puchero más contundente de España: garbanzos, carnes y verduras.",
+   tags:["invierno","contundente","tradición"],
+   ingredients:[{c:400,u:"g",i:"garbanzos"},{c:300,u:"g",i:"morcillo de ternera"},{c:200,u:"g",i:"chorizo"},{c:150,u:"g",i:"morcilla"},{c:200,u:"g",i:"tocino"},{c:2,u:"ud",i:"patatas"},{c:2,u:"ud",i:"zanahorias"},{c:200,u:"g",i:"repollo"},{c:100,u:"g",i:"fideos finos"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Remoja los garbanzos la noche anterior.","Pon las carnes y garbanzos en olla con agua fría. Lleva a ebullición.","Desespuma y añade verduras. Cuece 2 h a fuego suave.","Saca el caldo y cuece los fideos en él para la sopa.","Sirve en tres vuelcos: sopa, garbanzos con verduras, carnes."]},
+
+  /* ── ITALIANA ── */
+  {id:"w10",cuisine:"Italiana",flag:"🇮🇹",name:"Spaghetti carbonara",time:"20 min",timeMin:20,diff:"Media",
+   desc:"La auténtica carbonara: sin nata, solo huevo, pecorino y guanciale.",
+   tags:["pasta","rápida","clásica"],
+   ingredients:[{c:400,u:"g",i:"spaghetti"},{c:200,u:"g",i:"guanciale o bacon"},{c:4,u:"ud",i:"yemas de huevo"},{c:100,u:"g",i:"pecorino romano rallado"},{c:1,u:"pizca",i:"pimienta negra"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Cuece la pasta en agua con abundante sal.","Dora el guanciale en sartén sin aceite hasta crujiente.","Mezcla las yemas con el queso y pimienta negra abundante.","Escurre la pasta reservando agua de cocción.","Mezcla la pasta caliente con el guanciale fuera del fuego.","Añade la mezcla de huevo removiendo rápido. Agrega agua de cocción para cremosidad."]},
+
+  {id:"w11",cuisine:"Italiana",flag:"🇮🇹",name:"Risotto ai funghi",time:"35 min",timeMin:35,diff:"Media",
+   desc:"Arroz cremoso con setas y parmesano, el confort food italiano.",
+   tags:["arroz","cremoso","otoño"],
+   ingredients:[{c:320,u:"g",i:"arroz arborio"},{c:300,u:"g",i:"setas variadas"},{c:1,u:"ud",i:"cebolla"},{c:100,u:"ml",i:"vino blanco"},{c:1,u:"l",i:"caldo de verduras caliente"},{c:80,u:"g",i:"parmesano rallado"},{c:40,u:"g",i:"mantequilla"},{c:2,u:"dientes",i:"ajo"},{c:30,u:"ml",i:"aceite de oliva"}],
+   steps:["Sofríe la cebolla y el ajo en aceite y la mitad de la mantequilla.","Añade las setas limpias y saltea hasta que pierdan el agua.","Incorpora el arroz y tuesta 2 min. Vierte el vino y deja evaporar.","Añade el caldo cacito a cacito, removiendo, hasta que el arroz esté al dente (18-20 min).","Fuera del fuego, añade mantequilla fría y parmesano. Remueve con energía para la cremosidad."]},
+
+  {id:"w12",cuisine:"Italiana",flag:"🇮🇹",name:"Pizza Margherita",time:"90 min",timeMin:90,diff:"Media",
+   desc:"La pizza perfecta: masa napolitana, tomate San Marzano y mozzarella.",
+   tags:["horno","pizza","clásica"],
+   ingredients:[{c:500,u:"g",i:"harina de fuerza"},{c:7,u:"g",i:"levadura seca"},{c:300,u:"ml",i:"agua tibia"},{c:10,u:"g",i:"sal"},{c:400,u:"g",i:"tomate triturado"},{c:250,u:"g",i:"mozzarella fresca"},{c:1,u:"rama",i:"albahaca fresca"},{c:30,u:"ml",i:"aceite de oliva"}],
+   steps:["Mezcla harina, levadura, agua y sal. Amasa 10 min hasta que sea lisa y elástica.","Deja levar 1 h tapado.","Estira la masa finamente en una bandeja engrasada.","Unta con tomate, coloca la mozzarella en trozos.","Hornea a 250 ºC 10-12 min hasta que los bordes estén dorados.","Añade albahaca fresca y un hilo de aceite al sacar del horno."]},
+
+  {id:"w13",cuisine:"Italiana",flag:"🇮🇹",name:"Tiramisú",time:"30 min",timeMin:30,diff:"Fácil",
+   desc:"El postre italiano más famoso del mundo. Sin horno, irresistible.",
+   tags:["postre","sin horno","café"],
+   ingredients:[{c:500,u:"g",i:"mascarpone"},{c:4,u:"ud",i:"huevos"},{c:100,u:"g",i:"azúcar"},{c:200,u:"g",i:"bizcochos de soletilla"},{c:300,u:"ml",i:"café fuerte frío"},{c:50,u:"ml",i:"amaretto (opcional)"},{c:3,u:"cucharadas",i:"cacao en polvo"}],
+   steps:["Separa claras y yemas. Bate yemas con azúcar hasta que blanqueen.","Incorpora el mascarpone y mezcla suavemente.","Monta las claras a punto de nieve e incorpóralas con movimientos envolventes.","Moja los bizcochos rápidamente en el café y forma una capa en la fuente.","Añade crema, otra capa de bizcochos y más crema.","Refrigera 4 h. Espolvorea cacao justo antes de servir."]},
+
+  {id:"w14",cuisine:"Italiana",flag:"🇮🇹",name:"Lasaña boloñesa",time:"120 min",timeMin:120,diff:"Media",
+   desc:"Capas de pasta, ragú de carne y bechamel. El plato festivo italiano.",
+   tags:["horno","pasta","familia"],
+   ingredients:[{c:400,u:"g",i:"placas de lasaña"},{c:500,u:"g",i:"carne picada mixta"},{c:400,u:"g",i:"tomate triturado"},{c:1,u:"ud",i:"cebolla"},{c:2,u:"dientes",i:"ajo"},{c:100,u:"ml",i:"vino tinto"},{c:60,u:"g",i:"mantequilla"},{c:60,u:"g",i:"harina"},{c:700,u:"ml",i:"leche"},{c:150,u:"g",i:"parmesano rallado"},{c:1,u:"pizca",i:"nuez moscada"}],
+   steps:["Sofríe cebolla y ajo, añade la carne y dora. Vierte el vino y deja evaporar.","Añade el tomate y cuece el ragú 30 min a fuego suave.","Para la bechamel: derrite mantequilla, añade harina y después la leche caliente poco a poco.","Cuece las placas de lasaña según el paquete.","Monta en capas: bechamel, pasta, ragú, parmesano. Repite.","Termina con bechamel y parmesano. Hornea a 180 ºC 35 min."]},
+
+  /* ── MEXICANA ── */
+  {id:"w20",cuisine:"Mexicana",flag:"🇲🇽",name:"Guacamole",time:"10 min",timeMin:10,diff:"Fácil",
+   desc:"La salsa verde más famosa del mundo. Solo aguacate, lima y cilantro.",
+   tags:["aperitivo","vegetariana","rápida"],
+   ingredients:[{c:3,u:"ud",i:"aguacates maduros"},{c:1,u:"ud",i:"tomate"},{c:0.5,u:"ud",i:"cebolla morada"},{c:1,u:"ud",i:"lima"},{c:2,u:"ramas",i:"cilantro fresco"},{c:1,u:"pizca",i:"sal"},{c:0.5,u:"ud",i:"jalapeño (opcional)"}],
+   steps:["Aplasta el aguacate con un tenedor. Reserva el hueso.","Pica fino el tomate, la cebolla y el cilantro.","Mezcla todo con el zumo de lima y sal.","Pon el hueso dentro para que no se oxide. Sirve de inmediato."]},
+
+  {id:"w21",cuisine:"Mexicana",flag:"🇲🇽",name:"Tacos al pastor",time:"40 min",timeMin:40,diff:"Media",
+   desc:"Cerdo marinado con achiote y piña, el taco más popular de México.",
+   tags:["taco","cerdo","fiesta"],
+   ingredients:[{c:600,u:"g",i:"lomo de cerdo en láminas"},{c:3,u:"cucharadas",i:"pasta de achiote"},{c:2,u:"ud",i:"chiles guajillo"},{c:1,u:"ud",i:"naranja"},{c:1,u:"ud",i:"piña en rodajas"},{c:1,u:"cucharadita",i:"comino"},{c:12,u:"ud",i:"tortillas de maíz"},{c:1,u:"ud",i:"cebolla"},{c:2,u:"ramas",i:"cilantro"},{c:1,u:"ud",i:"lima"}],
+   steps:["Hidrata los chiles y bate con achiote, zumo de naranja y comino.","Marina la carne en esta mezcla mínimo 2 h.","Cocina la carne en plancha caliente junto con la piña.","Pica la carne en trozos pequeños.","Sirve en tortillas calientes con cebolla, cilantro y lima."]},
+
+  {id:"w22",cuisine:"Mexicana",flag:"🇲🇽",name:"Pozole rojo",time:"120 min",timeMin:120,diff:"Media",
+   desc:"Caldo festivo con maíz cacahuazintle y cerdo, con chiles rojos.",
+   tags:["sopa","festivo","contundente"],
+   ingredients:[{c:500,u:"g",i:"maíz cacahuazintle cocido"},{c:600,u:"g",i:"cerdo (paleta)"},{c:4,u:"ud",i:"chiles guajillo"},{c:2,u:"ud",i:"chiles ancho"},{c:3,u:"dientes",i:"ajo"},{c:1,u:"ud",i:"cebolla"},{c:1,u:"cucharadita",i:"orégano"},{c:2,u:"l",i:"agua"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Cuece el cerdo en agua con cebolla y ajo hasta tierno. Deshebra.","Hidrata los chiles y licúa con ajo y caldo.","Cuela y fríe la salsa en aceite caliente. Agrega al caldo.","Añade el maíz y el cerdo. Cuece 20 min más.","Sirve con tostadas, lechuga, orégano y limón al gusto."]},
+
+  {id:"w23",cuisine:"Mexicana",flag:"🇲🇽",name:"Enchiladas verdes",time:"45 min",timeMin:45,diff:"Fácil",
+   desc:"Tortillas rellenas de pollo bañadas en salsa verde de tomatillo.",
+   tags:["pollo","horno","salsa"],
+   ingredients:[{c:400,u:"g",i:"pechuga de pollo cocida y deshebrada"},{c:12,u:"ud",i:"tortillas de maíz"},{c:500,u:"g",i:"tomatillos"},{c:2,u:"ud",i:"chiles poblanos"},{c:1,u:"ud",i:"cebolla"},{c:2,u:"dientes",i:"ajo"},{c:200,u:"ml",i:"crema agria"},{c:150,u:"g",i:"queso fresco"}],
+   steps:["Asa los tomatillos, chiles, cebolla y ajo. Licúa para la salsa verde.","Rellena las tortillas con el pollo y enrolla.","Coloca en fuente engrasada y baña con la salsa verde.","Añade crema y queso por encima.","Hornea a 180 ºC 20 min hasta burbujear."]},
+
+  /* ── JAPONESA ── */
+  {id:"w30",cuisine:"Japonesa",flag:"🇯🇵",name:"Ramen casero",time:"60 min",timeMin:60,diff:"Media",
+   desc:"El caldo más profundo de Japón, con huevo marinado y chashu.",
+   tags:["sopa","caldo","umami"],
+   ingredients:[{c:200,u:"g",i:"panceta de cerdo entera"},{c:4,u:"ud",i:"huevos"},{c:400,u:"g",i:"fideos ramen"},{c:1,u:"l",i:"caldo de pollo"},{c:60,u:"ml",i:"salsa de soja"},{c:30,u:"ml",i:"mirin"},{c:2,u:"dientes",i:"ajo"},{c:20,u:"g",i:"jengibre fresco"},{c:4,u:"ud",i:"cebolletas"},{c:2,u:"hojas",i:"alga nori"}],
+   steps:["Enrolla y ata la panceta. Dórala en sartén por todos lados.","Cuece en soja, mirin y agua 45 min. Reserva para el chashu.","Marina los huevos cocidos 7 min en la salsa restante durante 2 h.","Aromatiza el caldo con ajo y jengibre. Ajusta de soja.","Cuece los fideos. Sirve con caldo, chashu en láminas, medio huevo y cebolleta."]},
+
+  {id:"w31",cuisine:"Japonesa",flag:"🇯🇵",name:"Gyoza caseras",time:"45 min",timeMin:45,diff:"Media",
+   desc:"Empanadillas japonesas crujientes por abajo y tiernas por arriba.",
+   tags:["aperitivo","frito","festivo"],
+   ingredients:[{c:200,u:"g",i:"carne picada de cerdo"},{c:200,u:"g",i:"col china picada fina"},{c:2,u:"dientes",i:"ajo"},{c:10,u:"g",i:"jengibre fresco rallado"},{c:2,u:"cucharadas",i:"salsa de soja"},{c:1,u:"cucharada",i:"aceite de sésamo"},{c:24,u:"ud",i:"obleas de gyoza"},{c:100,u:"ml",i:"agua"}],
+   steps:["Mezcla cerdo, col, ajo, jengibre, soja y sésamo.","Rellena cada oblea con una cucharadita. Dobla y plisea el borde para sellar.","Calienta aceite en sartén. Coloca las gyoza y dora la base 2 min.","Añade el agua, tapa y deja que se evapore (5-7 min).","Sirve con salsa de soja y un chorrito de vinagre de arroz."]},
+
+  {id:"w32",cuisine:"Japonesa",flag:"🇯🇵",name:"Onigiri de atún",time:"20 min",timeMin:20,diff:"Fácil",
+   desc:"Las bolitas de arroz japonesas, el snack más popular del país.",
+   tags:["snack","rápido","arroz"],
+   ingredients:[{c:300,u:"g",i:"arroz japonés cocido"},{c:1,u:"lata",i:"atún en aceite"},{c:2,u:"cucharadas",i:"mayonesa"},{c:4,u:"hojas",i:"alga nori"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Mezcla el atún escurrido con mayonesa.","Mójate las manos con agua salada. Toma una porción de arroz.","Haz un hueco, introduce el relleno y forma un triángulo compactando bien.","Envuelve la base con una tira de alga nori."]},
+
+  {id:"w33",cuisine:"Japonesa",flag:"🇯🇵",name:"Miso soup",time:"10 min",timeMin:10,diff:"Fácil",
+   desc:"La sopa diaria de Japón, nutritiva y lista en minutos.",
+   tags:["sopa","rápida","umami"],
+   ingredients:[{c:800,u:"ml",i:"agua"},{c:1,u:"cucharadita",i:"dashi en polvo"},{c:3,u:"cucharadas",i:"pasta miso"},{c:100,u:"g",i:"tofu firme en cubos"},{c:2,u:"cucharadas",i:"alga wakame seca"},{c:2,u:"ud",i:"cebolletas picadas"}],
+   steps:["Calienta el agua con el dashi. No dejes que hierva.","Hidrata el wakame en agua fría y escurre.","Disuelve el miso en un poco del caldo caliente antes de añadir al resto.","Añade el tofu y el wakame. Calienta sin hervir.","Sirve con cebolleta por encima."]},
+
+  /* ── INDIA ── */
+  {id:"w40",cuisine:"India",flag:"🇮🇳",name:"Chicken tikka masala",time:"50 min",timeMin:50,diff:"Media",
+   desc:"El curry más pedido del mundo: pollo en salsa cremosa de tomate y especias.",
+   tags:["curry","especias","cremoso"],
+   ingredients:[{c:600,u:"g",i:"pechuga de pollo en dados"},{c:200,u:"ml",i:"yogur natural"},{c:2,u:"cucharaditas",i:"garam masala"},{c:1,u:"cucharadita",i:"cúrcuma"},{c:1,u:"cucharadita",i:"comino"},{c:400,u:"g",i:"tomate triturado"},{c:200,u:"ml",i:"nata"},{c:1,u:"ud",i:"cebolla"},{c:3,u:"dientes",i:"ajo"},{c:20,u:"g",i:"jengibre fresco"},{c:30,u:"ml",i:"aceite"}],
+   steps:["Marina el pollo en yogur, garam masala y cúrcuma al menos 1 h.","Asa el pollo marinado en horno fuerte o plancha hasta dorar.","Sofríe cebolla, ajo y jengibre hasta dorar.","Añade comino, garam masala y tomate. Cuece 15 min.","Incorpora el pollo asado y la nata. Cuece 10 min más.","Sirve con arroz basmati o pan naan."]},
+
+  {id:"w41",cuisine:"India",flag:"🇮🇳",name:"Dal makhani",time:"60 min",timeMin:60,diff:"Fácil",
+   desc:"Lentejas negras en salsa de tomate y mantequilla. El confort food del Punjab.",
+   tags:["vegetariana","lentejas","especias"],
+   ingredients:[{c:250,u:"g",i:"lentejas negras (urad dal)"},{c:100,u:"g",i:"alubias rojas"},{c:200,u:"g",i:"tomate triturado"},{c:60,u:"g",i:"mantequilla"},{c:100,u:"ml",i:"nata"},{c:1,u:"ud",i:"cebolla"},{c:3,u:"dientes",i:"ajo"},{c:15,u:"g",i:"jengibre"},{c:1,u:"cucharadita",i:"comino"},{c:1,u:"cucharadita",i:"garam masala"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Remoja las lentejas y alubias la noche anterior. Cuece 45 min.","Sofríe cebolla, ajo y jengibre en mantequilla hasta dorar.","Añade el tomate y las especias. Cuece 10 min.","Incorpora las lentejas cocidas. Cuece 20 min a fuego suave.","Añade la nata y la mantequilla restante. Remueve y sirve."]},
+
+  {id:"w42",cuisine:"India",flag:"🇮🇳",name:"Palak paneer",time:"35 min",timeMin:35,diff:"Fácil",
+   desc:"Queso fresco indio en salsa cremosa de espinacas. Un clásico vegetariano.",
+   tags:["vegetariana","espinacas","queso"],
+   ingredients:[{c:400,u:"g",i:"espinacas frescas"},{c:250,u:"g",i:"paneer en cubos"},{c:1,u:"ud",i:"cebolla"},{c:2,u:"dientes",i:"ajo"},{c:10,u:"g",i:"jengibre"},{c:2,u:"ud",i:"tomates"},{c:1,u:"cucharadita",i:"garam masala"},{c:100,u:"ml",i:"nata"},{c:30,u:"ml",i:"aceite"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Blanquea las espinacas 2 min en agua hirviendo. Bate hasta obtener un puré.","Sofríe cebolla, ajo y jengibre. Añade tomate y especias. Cuece 10 min.","Incorpora el puré de espinacas y cuece 5 min.","Añade el paneer dorado en sartén y la nata. Mezcla suavemente."]},
+
+  {id:"w43",cuisine:"India",flag:"🇮🇳",name:"Biryani de pollo",time:"75 min",timeMin:75,diff:"Media",
+   desc:"El arroz especiado más festivo de la India, perfumado con azafrán y ghee.",
+   tags:["arroz","festivo","especias"],
+   ingredients:[{c:600,u:"g",i:"muslos de pollo"},{c:400,u:"g",i:"arroz basmati"},{c:200,u:"ml",i:"yogur natural"},{c:2,u:"ud",i:"cebollas"},{c:3,u:"dientes",i:"ajo"},{c:20,u:"g",i:"jengibre"},{c:1,u:"cucharadita",i:"garam masala"},{c:1,u:"cucharadita",i:"cúrcuma"},{c:1,u:"pizca",i:"azafrán"},{c:50,u:"ml",i:"leche caliente"},{c:50,u:"g",i:"ghee o mantequilla"}],
+   steps:["Marina el pollo con yogur, ajo, jengibre y especias 2 h.","Fríe las cebollas en láminas hasta dorar y crujir. Reserva.","Cuece el arroz al 70% en agua con sal. Escurre.","Sofríe el pollo marinado 10 min.","Monta en capas en olla: pollo, arroz, cebollas fritas, azafrán en leche y ghee.","Cuece tapado a fuego muy suave 25 min (dum)."]},
+
+  /* ── FRANCESA ── */
+  {id:"w50",cuisine:"Francesa",flag:"🇫🇷",name:"Coq au vin",time:"90 min",timeMin:90,diff:"Media",
+   desc:"Pollo braseado en vino tinto con champiñones y bacon. Elegancia campestre francesa.",
+   tags:["pollo","vino","clásica"],
+   ingredients:[{c:1,u:"ud",i:"pollo troceado"},{c:500,u:"ml",i:"vino tinto"},{c:200,u:"g",i:"champiñones"},{c:150,u:"g",i:"bacon"},{c:12,u:"ud",i:"cebolletas"},{c:2,u:"dientes",i:"ajo"},{c:2,u:"ramas",i:"tomillo"},{c:2,u:"hojas",i:"laurel"},{c:30,u:"g",i:"mantequilla"},{c:30,u:"ml",i:"aceite"},{c:1,u:"cucharada",i:"harina"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Dora el pollo en aceite y mantequilla. Reserva.","En la misma olla, saltea el bacon, cebolletas y champiñones.","Añade el ajo, la harina y remueve. Vierte el vino y las hierbas.","Reincorpora el pollo. Cuece tapado a fuego suave 45 min.","Sirve con pan rústico o puré de patata."]},
+
+  {id:"w51",cuisine:"Francesa",flag:"🇫🇷",name:"Ratatouille provenzal",time:"70 min",timeMin:70,diff:"Fácil",
+   desc:"Verduras de verano asadas en capas. Un poema de colores mediterráneos.",
+   tags:["vegetariana","verano","horno"],
+   ingredients:[{c:2,u:"ud",i:"berenjenas"},{c:2,u:"ud",i:"calabacines"},{c:4,u:"ud",i:"tomates"},{c:2,u:"ud",i:"pimientos de colores"},{c:1,u:"ud",i:"cebolla"},{c:3,u:"dientes",i:"ajo"},{c:1,u:"rama",i:"tomillo"},{c:1,u:"rama",i:"romero"},{c:60,u:"ml",i:"aceite de oliva"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Corta todas las verduras en rodajas finas uniformes.","Sofríe la cebolla y el ajo. Añade los pimientos troceados 5 min.","Extiende la base de cebolla en una fuente de horno.","Coloca las rodajas de verdura en capas solapadas.","Aliña con aceite, tomillo y romero. Hornea a 160 ºC 50 min."]},
+
+  {id:"w52",cuisine:"Francesa",flag:"🇫🇷",name:"Crème brûlée",time:"70 min",timeMin:70,diff:"Media",
+   desc:"La crema francesa con la costra de azúcar caramelizado que todos aman.",
+   tags:["postre","horno","cremoso"],
+   ingredients:[{c:500,u:"ml",i:"nata para montar"},{c:5,u:"ud",i:"yemas de huevo"},{c:100,u:"g",i:"azúcar"},{c:1,u:"ud",i:"vaina de vainilla"},{c:4,u:"cucharadas",i:"azúcar moreno"}],
+   steps:["Calienta la nata con la vainilla abierta (sin hervir).","Bate las yemas con el azúcar hasta que blanqueen.","Mezcla la nata caliente con las yemas sin dejar de remover.","Vierte en ramequines y hornea al baño maría a 150 ºC 45 min.","Refrigera 2 h. Espolvorea azúcar moreno y carameliza con soplete justo antes de servir."]},
+
+  /* ── GRIEGA ── */
+  {id:"w60",cuisine:"Griega",flag:"🇬🇷",name:"Moussaka",time:"100 min",timeMin:100,diff:"Media",
+   desc:"El plato nacional griego: berenjena, carne especiada y bechamel dorada.",
+   tags:["horno","berenjena","clásica"],
+   ingredients:[{c:3,u:"ud",i:"berenjenas grandes"},{c:500,u:"g",i:"carne picada de cordero o ternera"},{c:400,u:"g",i:"tomate triturado"},{c:1,u:"ud",i:"cebolla"},{c:2,u:"dientes",i:"ajo"},{c:1,u:"cucharadita",i:"canela"},{c:1,u:"cucharadita",i:"orégano"},{c:100,u:"ml",i:"vino tinto"},{c:60,u:"g",i:"mantequilla"},{c:60,u:"g",i:"harina"},{c:600,u:"ml",i:"leche"},{c:2,u:"ud",i:"huevos"},{c:80,u:"g",i:"parmesano"}],
+   steps:["Corta las berenjenas, sala y deja reposar 20 min. Enjuaga y dora en aceite.","Sofríe cebolla y ajo, añade la carne. Incorpora tomate, vino, canela y orégano. Cuece 20 min.","Prepara una bechamel espesa. Fuera del fuego, añade los huevos batidos.","Monta: capa de berenjena, capa de carne, capa de berenjena, bechamel y queso.","Hornea a 180 ºC 40 min hasta dorar."]},
+
+  {id:"w61",cuisine:"Griega",flag:"🇬🇷",name:"Spanakopita",time:"60 min",timeMin:60,diff:"Media",
+   desc:"El pastel de espinacas y queso feta en hojas de phyllo. Crujiente y delicioso.",
+   tags:["espinacas","queso","horno"],
+   ingredients:[{c:500,u:"g",i:"espinacas frescas"},{c:300,u:"g",i:"queso feta"},{c:3,u:"ud",i:"huevos"},{c:1,u:"ud",i:"cebolla"},{c:2,u:"ramas",i:"eneldo fresco"},{c:10,u:"hojas",i:"pasta phyllo"},{c:100,u:"ml",i:"aceite de oliva"},{c:1,u:"pizca",i:"pimienta"}],
+   steps:["Saltea la cebolla y las espinacas hasta que pierdan el agua. Enfría.","Mezcla con feta desmenuzado, huevos y eneldo.","Pincela cada hoja de phyllo con aceite y superpón 5 hojas en un molde.","Rellena y cubre con las otras 5 hojas aceitadas.","Hornea a 180 ºC 40 min hasta dorar bien."]},
+
+  {id:"w62",cuisine:"Griega",flag:"🇬🇷",name:"Tzatziki",time:"15 min",timeMin:15,diff:"Fácil",
+   desc:"La salsa griega de yogur y pepino, perfecta para dipear o acompañar.",
+   tags:["salsa","vegetariana","rápida"],
+   ingredients:[{c:400,u:"g",i:"yogur griego"},{c:1,u:"ud",i:"pepino"},{c:2,u:"dientes",i:"ajo"},{c:2,u:"cucharadas",i:"aceite de oliva"},{c:1,u:"cucharada",i:"eneldo o menta fresca"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Ralla el pepino y escurre bien el exceso de agua.","Mezcla el yogur con el pepino, el ajo picado fino, el aceite y las hierbas.","Sala y refrigera al menos 30 min para que se integren los sabores.","Sirve con pan de pita, verduras o como acompañamiento."]},
+
+  /* ── MARROQUÍ ── */
+  {id:"w70",cuisine:"Marroquí",flag:"🇲🇦",name:"Tajín de pollo con limón",time:"75 min",timeMin:75,diff:"Media",
+   desc:"Guiso especiado con limones encurtidos y aceitunas. El perfume del norte de África.",
+   tags:["guiso","especias","limón"],
+   ingredients:[{c:1,u:"ud",i:"pollo troceado"},{c:2,u:"ud",i:"limones encurtidos"},{c:100,u:"g",i:"aceitunas verdes"},{c:1,u:"ud",i:"cebolla"},{c:2,u:"dientes",i:"ajo"},{c:1,u:"cucharadita",i:"cúrcuma"},{c:1,u:"cucharadita",i:"jengibre en polvo"},{c:1,u:"cucharadita",i:"comino"},{c:1,u:"rama",i:"cilantro"},{c:200,u:"ml",i:"caldo de pollo"},{c:30,u:"ml",i:"aceite de oliva"}],
+   steps:["Marina el pollo con las especias 30 min.","Dora el pollo en aceite. Reserva.","Sofríe la cebolla y el ajo. Añade el caldo.","Incorpora el pollo, la piel de limón encurtido y las aceitunas.","Cuece tapado 45 min a fuego suave. Añade cilantro al final.","Sirve con cuscús o pan marroquí."]},
+
+  {id:"w71",cuisine:"Marroquí",flag:"🇲🇦",name:"Cuscús con siete verduras",time:"60 min",timeMin:60,diff:"Fácil",
+   desc:"El plato del viernes marroquí: cuscús aromático con verduras y garbanzos.",
+   tags:["vegetariana","cuscús","especias"],
+   ingredients:[{c:400,u:"g",i:"cuscús"},{c:200,u:"g",i:"garbanzos cocidos"},{c:2,u:"ud",i:"zanahorias"},{c:2,u:"ud",i:"calabacines"},{c:2,u:"ud",i:"nabos"},{c:1,u:"ud",i:"cebolla"},{c:400,u:"g",i:"calabaza"},{c:1,u:"cucharadita",i:"ras el hanout"},{c:1,u:"cucharadita",i:"cúrcuma"},{c:500,u:"ml",i:"caldo de verduras"},{c:30,u:"ml",i:"aceite de oliva"}],
+   steps:["Sofríe la cebolla con las especias. Añade las verduras en dados.","Vierte el caldo y cuece 25 min. Añade los garbanzos los últimos 10 min.","Hidrata el cuscús con caldo hirviendo (1:1). Remueve con aceite y sal.","Sirve el cuscús en una fuente y las verduras por encima."]},
+
+  /* ── AMERICANA ── */
+  {id:"w80",cuisine:"Americana",flag:"🇺🇸",name:"Smash burgers caseras",time:"20 min",timeMin:20,diff:"Fácil",
+   desc:"Las hamburguesas que arrasan en todo el mundo: aplastadas en plancha caliente y extra crujientes.",
+   tags:["hamburguesa","rápida","carne"],
+   ingredients:[{c:400,u:"g",i:"carne picada de ternera"},{c:4,u:"ud",i:"panecillos de hamburguesa"},{c:4,u:"lonchas",i:"queso cheddar"},{c:4,u:"hojas",i:"lechuga"},{c:2,u:"ud",i:"tomates en rodajas"},{c:4,u:"cucharadas",i:"salsa burger (mayonesa, ketchup, pepinillos)"},{c:1,u:"pizca",i:"sal"},{c:1,u:"pizca",i:"pimienta"}],
+   steps:["Divide la carne en 4 bolas sin compactar demasiado. Sazona.","Calienta la plancha al máximo. Coloca las bolas y aplasta fuerte con una espátula.","Cocina 2 min, voltea, añade el queso y tapa 30 seg para que se funda.","Tuesta los panes en la misma plancha.","Monta con salsa, lechuga, tomate y la hamburguesa."]},
+
+  {id:"w81",cuisine:"Americana",flag:"🇺🇸",name:"Mac and cheese casero",time:"30 min",timeMin:30,diff:"Fácil",
+   desc:"Los macarrones con queso reconfortantes que gustan a toda la familia.",
+   tags:["pasta","queso","reconfortante"],
+   ingredients:[{c:400,u:"g",i:"macarrones"},{c:60,u:"g",i:"mantequilla"},{c:60,u:"g",i:"harina"},{c:600,u:"ml",i:"leche"},{c:200,u:"g",i:"queso cheddar rallado"},{c:100,u:"g",i:"queso gruyère rallado"},{c:1,u:"pizca",i:"nuez moscada"},{c:1,u:"pizca",i:"pimienta"}],
+   steps:["Cuece los macarrones al dente. Reserva.","Prepara una bechamel con mantequilla, harina y leche.","Fuera del fuego, añade los quesos y remueve hasta que se fundan.","Mezcla con la pasta y sirve, o gratina en horno 15 min con queso extra."]},
+
+  {id:"w82",cuisine:"Americana",flag:"🇺🇸",name:"Pancakes americanos",time:"20 min",timeMin:20,diff:"Fácil",
+   desc:"Las tortitas esponjosas del desayuno americano, con sirope de arce.",
+   tags:["desayuno","dulce","rápido"],
+   ingredients:[{c:200,u:"g",i:"harina"},{c:2,u:"cucharaditas",i:"levadura química"},{c:2,u:"ud",i:"huevos"},{c:250,u:"ml",i:"leche"},{c:30,u:"g",i:"mantequilla derretida"},{c:30,u:"g",i:"azúcar"},{c:1,u:"pizca",i:"sal"},{c:1,u:"al gusto",i:"sirope de arce"}],
+   steps:["Mezcla los ingredientes secos. Mezcla los líquidos por separado.","Une ambas mezclas sin batir en exceso (los grumos pequeños están bien).","Vierte porciones en sartén engrasada a fuego medio.","Cuando aparezcan burbujas, voltea. Cocina 1 min más.","Sirve con mantequilla y sirope de arce."]},
+
+  /* ── PERUANA ── */
+  {id:"w90",cuisine:"Peruana",flag:"🇵🇪",name:"Ceviche clásico",time:"20 min",timeMin:20,diff:"Fácil",
+   desc:"El plato nacional del Perú: pescado fresco cocinado en leche de tigre.",
+   tags:["pescado","frío","fresco"],
+   ingredients:[{c:600,u:"g",i:"corvina o lenguado en dados"},{c:200,u:"ml",i:"zumo de lima"},{c:1,u:"ud",i:"cebolla morada en juliana"},{c:2,u:"ud",i:"ají amarillo"},{c:2,u:"ramas",i:"cilantro"},{c:1,u:"diente",i:"ajo"},{c:1,u:"pizca",i:"sal"},{c:200,u:"g",i:"maíz cocido"},{c:2,u:"ud",i:"camote cocido"}],
+   steps:["Corta el pescado en dados de 2 cm. Salpimienta.","Licúa el ají, el ajo y parte del cilantro con un poco de lima para la leche de tigre.","Mezcla el pescado con la cebolla, el zumo y la leche de tigre. Deja reposar 3-5 min.","Rectifica de sal. Sirve de inmediato con maíz y camote."]},
+
+  {id:"w91",cuisine:"Peruana",flag:"🇵🇪",name:"Lomo saltado",time:"25 min",timeMin:25,diff:"Fácil",
+   desc:"El salteado mestizo más famoso del Perú: carne, soja y patatas fritas.",
+   tags:["carne","salteado","rápido"],
+   ingredients:[{c:500,u:"g",i:"solomillo de ternera en tiras"},{c:2,u:"ud",i:"tomates en gajos"},{c:1,u:"ud",i:"cebolla morada en gajos"},{c:2,u:"ud",i:"ají amarillo"},{c:60,u:"ml",i:"salsa de soja"},{c:30,u:"ml",i:"vinagre"},{c:2,u:"dientes",i:"ajo"},{c:300,u:"g",i:"patatas fritas"},{c:2,u:"ramas",i:"cilantro"},{c:30,u:"ml",i:"aceite"}],
+   steps:["Saltea la carne en aceite muy caliente hasta dorar. Reserva.","En el mismo wok, saltea la cebolla y el ají 1 min.","Añade el tomate, el ajo, la soja y el vinagre. Saltea a fuego fuerte.","Incorpora la carne y remueve. Añade las patatas fritas.","Sirve con arroz blanco y cilantro picado."]},
+
+  /* ── TAILANDESA ── */
+  {id:"w100",cuisine:"Tailandesa",flag:"🇹🇭",name:"Pad Thai",time:"20 min",timeMin:20,diff:"Fácil",
+   desc:"Los fideos salteados más famosos del mundo, equilibrio perfecto de sabores.",
+   tags:["fideos","salteado","rápido"],
+   ingredients:[{c:200,u:"g",i:"fideos de arroz"},{c:200,u:"g",i:"gambas peladas"},{c:3,u:"ud",i:"huevos"},{c:100,u:"g",i:"brotes de soja"},{c:3,u:"cucharadas",i:"salsa de tamarindo"},{c:2,u:"cucharadas",i:"salsa de pescado"},{c:1,u:"cucharada",i:"azúcar moreno"},{c:3,u:"ud",i:"cebolletas picadas"},{c:50,u:"g",i:"cacahuetes tostados"},{c:1,u:"ud",i:"lima"},{c:2,u:"dientes",i:"ajo"}],
+   steps:["Remoja los fideos en agua fría 30 min. Escurre.","Saltea las gambas en aceite con ajo. Apártalas.","En el mismo wok, fríe los huevos removiendo. Añade los fideos.","Incorpora tamarindo, salsa de pescado y azúcar. Mezcla bien.","Añade brotes de soja y cebolletas. Saltea 1 min.","Sirve con cacahuetes, lima y chile seco al gusto."]},
+
+  {id:"w101",cuisine:"Tailandesa",flag:"🇹🇭",name:"Curry verde tailandés",time:"30 min",timeMin:30,diff:"Fácil",
+   desc:"El curry más aromático de Tailandia, con leche de coco y albahaca thai.",
+   tags:["curry","coco","especias"],
+   ingredients:[{c:500,u:"g",i:"pechuga de pollo en dados"},{c:400,u:"ml",i:"leche de coco"},{c:3,u:"cucharadas",i:"pasta de curry verde"},{c:200,u:"g",i:"berenjenas thai"},{c:100,u:"g",i:"judías verdes"},{c:2,u:"cucharadas",i:"salsa de pescado"},{c:1,u:"cucharadita",i:"azúcar de palma"},{c:1,u:"rama",i:"albahaca thai"},{c:2,u:"hojas",i:"lima kaffir"}],
+   steps:["Fríe la pasta de curry en un poco de leche de coco hasta que suelte el aroma.","Añade el resto de la leche de coco y lleva a ebullición suave.","Incorpora el pollo y cuece 10 min.","Añade las verduras, la salsa de pescado y el azúcar. Cuece 5 min.","Añade las hojas de lima y la albahaca. Sirve con arroz jazmín."]},
+
+  /* ── CHINA ── */
+  {id:"w110",cuisine:"China",flag:"🇨🇳",name:"Cerdo agridulce",time:"40 min",timeMin:40,diff:"Media",
+   desc:"El clásico de los restaurantes chinos, crujiente y con la salsa perfecta.",
+   tags:["cerdo","salteado","agridulce"],
+   ingredients:[{c:500,u:"g",i:"lomo de cerdo en dados"},{c:1,u:"ud",i:"pimiento rojo"},{c:1,u:"ud",i:"pimiento verde"},{c:1,u:"ud",i:"cebolla"},{c:200,u:"g",i:"piña en trozos"},{c:3,u:"cucharadas",i:"ketchup"},{c:2,u:"cucharadas",i:"vinagre de arroz"},{c:2,u:"cucharadas",i:"azúcar"},{c:2,u:"cucharadas",i:"salsa de soja"},{c:100,u:"g",i:"maizena"},{c:500,u:"ml",i:"aceite para freír"}],
+   steps:["Pasa el cerdo por maizena y fríe hasta dorar. Escurre.","Mezcla ketchup, vinagre, azúcar y soja para la salsa agridulce.","Saltea los pimientos y la cebolla en un wok.","Añade la piña y la salsa. Deja que espese.","Incorpora el cerdo frito y mezcla rápidamente. Sirve con arroz."]},
+
+  {id:"w111",cuisine:"China",flag:"🇨🇳",name:"Pollo kung pao",time:"25 min",timeMin:25,diff:"Fácil",
+   desc:"El wok picante con cacahuetes y especias de Sichuan.",
+   tags:["pollo","picante","wok"],
+   ingredients:[{c:500,u:"g",i:"pechuga de pollo en dados"},{c:80,u:"g",i:"cacahuetes tostados"},{c:6,u:"ud",i:"chiles secos"},{c:3,u:"ud",i:"cebolletas"},{c:2,u:"dientes",i:"ajo"},{c:10,u:"g",i:"jengibre"},{c:2,u:"cucharadas",i:"salsa de soja"},{c:1,u:"cucharada",i:"vinagre de arroz"},{c:1,u:"cucharadita",i:"azúcar"},{c:1,u:"cucharadita",i:"maizena"},{c:2,u:"cucharadas",i:"aceite"}],
+   steps:["Marina el pollo en soja, vinagre, azúcar y maizena 15 min.","Saltea los chiles en aceite caliente hasta que oscurezcan.","Añade el ajo y el jengibre. Saltea 30 seg.","Incorpora el pollo y saltea a fuego fuerte hasta dorar.","Añade los cacahuetes y las cebolletas. Mezcla y sirve con arroz."]},
+
+  {id:"w112",cuisine:"China",flag:"🇨🇳",name:"Dim sum de gambas",time:"50 min",timeMin:50,diff:"Difícil",
+   desc:"Los dumplings al vapor rellenos de gambas, el clásico del yum cha cantonés.",
+   tags:["marisco","al vapor","festivo"],
+   ingredients:[{c:300,u:"g",i:"gambas peladas picadas"},{c:100,u:"g",i:"brotes de bambú picados"},{c:1,u:"cucharadita",i:"aceite de sésamo"},{c:1,u:"cucharada",i:"salsa de soja"},{c:1,u:"cucharadita",i:"maizena"},{c:200,u:"g",i:"harina de trigo"},{c:100,u:"ml",i:"agua hirviendo"}],
+   steps:["Mezcla las gambas con bambú, sésamo, soja y maizena. Refrigera 20 min.","Para la masa: vierte agua hirviendo sobre la harina poco a poco. Amasa hasta que sea suave.","Estira la masa muy finamente y corta círculos de 8 cm.","Rellena cada círculo con una cucharadita del relleno y plisea para cerrar.","Cuece al vapor sobre papel de hornear 8-10 min."]},
+
+  /* ── ÁRABE / LEVANTE ── */
+  {id:"w120",cuisine:"Árabe",flag:"🌙",name:"Hummus casero",time:"15 min",timeMin:15,diff:"Fácil",
+   desc:"El paté de garbanzos más cremoso del mundo. Solo necesitas una batidora.",
+   tags:["vegetariana","aperitivo","rápido"],
+   ingredients:[{c:400,u:"g",i:"garbanzos cocidos"},{c:60,u:"ml",i:"tahini"},{c:1,u:"ud",i:"limón"},{c:1,u:"diente",i:"ajo"},{c:60,u:"ml",i:"agua fría"},{c:30,u:"ml",i:"aceite de oliva"},{c:1,u:"pizca",i:"comino"},{c:1,u:"pizca",i:"sal"},{c:1,u:"pizca",i:"pimentón"}],
+   steps:["Bate los garbanzos con el tahini, el limón, el ajo y el agua hasta que sea muy suave.","Añade el aceite y el comino. Sigue batiendo.","Rectifica de sal y limón.","Sirve en un plato hondo con un chorro de aceite y pimentón."]},
+
+  {id:"w121",cuisine:"Árabe",flag:"🌙",name:"Falafel casero",time:"30 min",timeMin:30,diff:"Fácil",
+   desc:"Buñuelos crujientes de garbanzos con especias. El street food del Mediterráneo oriental.",
+   tags:["vegetariana","frito","especias"],
+   ingredients:[{c:400,u:"g",i:"garbanzos en remojo (crudos)"},{c:1,u:"ud",i:"cebolla"},{c:3,u:"dientes",i:"ajo"},{c:2,u:"ramas",i:"cilantro"},{c:2,u:"ramas",i:"perejil"},{c:1,u:"cucharadita",i:"comino"},{c:1,u:"cucharadita",i:"cilantro molido"},{c:1,u:"cucharadita",i:"levadura química"},{c:500,u:"ml",i:"aceite para freír"}],
+   steps:["Escurre los garbanzos en remojo (no usar en conserva, deben ser crudos remojados).","Bate en procesador con cebolla, ajo, hierbas y especias hasta textura granulada.","Añade la levadura y harina si es necesario para formar bolas.","Refrigera 30 min. Forma bolas o discos.","Fríe en aceite abundante a 175 ºC hasta dorar.","Sirve en pan de pita con tahini, tomate y pepino."]},
+
+  {id:"w122",cuisine:"Árabe",flag:"🌙",name:"Shawarma de pollo",time:"35 min",timeMin:35,diff:"Fácil",
+   desc:"El kebab árabe más popular, marinado con especias cálidas y salsa de ajo.",
+   tags:["pollo","especias","street food"],
+   ingredients:[{c:600,u:"g",i:"pechuga de pollo en tiras"},{c:1,u:"cucharadita",i:"comino"},{c:1,u:"cucharadita",i:"cúrcuma"},{c:1,u:"cucharadita",i:"pimentón"},{c:1,u:"cucharadita",i:"canela"},{c:2,u:"dientes",i:"ajo"},{c:60,u:"ml",i:"yogur"},{c:30,u:"ml",i:"aceite de oliva"},{c:4,u:"ud",i:"pan de pita"},{c:1,u:"ud",i:"pepino"},{c:2,u:"cucharadas",i:"tahini"}],
+   steps:["Marina el pollo con todas las especias, yogur y aceite al menos 1 h.","Cocina en plancha muy caliente hasta dorar y cocinado.","Mezcla tahini con zumo de limón y agua para la salsa.","Sirve en pita con pepino, tomate y salsa de tahini."]},
+
+  /* ── ALEMANA ── */
+  {id:"w130",cuisine:"Alemana",flag:"🇩🇪",name:"Schnitzel vienés",time:"25 min",timeMin:25,diff:"Fácil",
+   desc:"El filete empanado más famoso de Europa Central. Crujiente y jugoso.",
+   tags:["ternera","empanado","rápido"],
+   ingredients:[{c:4,u:"ud",i:"filetes de ternera finos"},{c:2,u:"ud",i:"huevos"},{c:150,u:"g",i:"pan rallado"},{c:80,u:"g",i:"harina"},{c:200,u:"ml",i:"aceite o mantequilla clarificada"},{c:1,u:"ud",i:"limón"},{c:1,u:"pizca",i:"sal"}],
+   steps:["Aplana los filetes entre plásticos hasta que queden muy finos.","Salpimienta. Pasa por harina, huevo batido y pan rallado.","Fríe en abundante aceite caliente hasta que floten y doren (2-3 min por lado).","Escurre en papel. Sirve con limón y ensalada de patata."]},
+
+  {id:"w131",cuisine:"Alemana",flag:"🇩🇪",name:"Sauerbraten",time:"180 min",timeMin:180,diff:"Difícil",
+   desc:"El asado marinado alemán con salsa agridulce de frutos rojos.",
+   tags:["asado","marinado","tradición"],
+   ingredients:[{c:1.2,u:"kg",i:"redondo de ternera"},{c:500,u:"ml",i:"vinagre de vino tinto"},{c:500,u:"ml",i:"agua"},{c:2,u:"ud",i:"cebollas"},{c:2,u:"hojas",i:"laurel"},{c:6,u:"ud",i:"granos de pimienta"},{c:60,u:"g",i:"azúcar moreno"},{c:50,u:"g",i:"pan de jengibre picado"},{c:50,u:"g",i:"pasas"},{c:30,u:"ml",i:"aceite"}],
+   steps:["Marina la carne en vinagre, agua, cebolla y especias en el frigorífico 3 días.","Saca la carne y dórala en aceite. Reserva la marinada.","Cuece tapado con la marinada 2 h a fuego suave.","Cuela el caldo, añade el pan de jengibre, el azúcar y las pasas. Cuece hasta espesar.","Sirve con la salsa, col lombarda y puré o knödel."]},
+
+  /* ── BRASILEÑA ── */
+  {id:"w140",cuisine:"Brasileña",flag:"🇧🇷",name:"Feijoada",time:"180 min",timeMin:180,diff:"Media",
+   desc:"El plato nacional brasileño: alubias negras con carnes ahumadas.",
+   tags:["legumbres","contundente","tradición"],
+   ingredients:[{c:500,u:"g",i:"alubias negras"},{c:300,u:"g",i:"costillas de cerdo"},{c:200,u:"g",i:"chorizo"},{c:200,u:"g",i:"bacon"},{c:1,u:"ud",i:"cebolla"},{c:4,u:"dientes",i:"ajo"},{c:2,u:"hojas",i:"laurel"},{c:2,u:"ud",i:"naranjas"},{c:30,u:"ml",i:"aceite"}],
+   steps:["Remoja las alubias la noche anterior.","Sofríe la cebolla y el ajo. Añade las alubias escurridas, las carnes y el laurel.","Cubre con agua. Cuece 2 h a fuego suave hasta que todo esté tierno.","Sirve con arroz blanco, farofa y naranja en rodajas."]},
+
+  {id:"w141",cuisine:"Brasileña",flag:"🇧🇷",name:"Pão de queijo",time:"35 min",timeMin:35,diff:"Fácil",
+   desc:"Los panecillos de queso brasileños, sin gluten y completamente adictivos.",
+   tags:["sin gluten","queso","desayuno"],
+   ingredients:[{c:250,u:"g",i:"harina de tapioca"},{c:100,u:"ml",i:"leche"},{c:100,u:"ml",i:"aceite"},{c:1,u:"pizca",i:"sal"},{c:2,u:"ud",i:"huevos"},{c:150,u:"g",i:"queso parmesano o minas rallado"}],
+   steps:["Calienta la leche y el aceite hasta casi hervir.","Vierte sobre la harina de tapioca y mezcla hasta unir.","Cuando se temple, añade los huevos y el queso.","Forma bolitas del tamaño de una nuez.","Hornea a 180 ºC 20-25 min hasta que doren e inflen."]},
+
+  /* ── COREANA ── */
+  {id:"w150",cuisine:"Coreana",flag:"🇰🇷",name:"Bibimbap",time:"35 min",timeMin:35,diff:"Fácil",
+   desc:"El bol de arroz coreano con verduras, carne y huevo. Un cuadro comestible.",
+   tags:["arroz","bol","colorido"],
+   ingredients:[{c:300,u:"g",i:"arroz blanco cocido"},{c:150,u:"g",i:"ternera picada"},{c:2,u:"ud",i:"zanahorias en juliana"},{c:200,u:"g",i:"espinacas"},{c:100,u:"g",i:"champiñones"},{c:100,u:"g",i:"brotes de soja"},{c:4,u:"ud",i:"huevos"},{c:3,u:"cucharadas",i:"gochujang (pasta de chile coreano)"},{c:2,u:"cucharadas",i:"aceite de sésamo"},{c:2,u:"cucharadas",i:"salsa de soja"}],
+   steps:["Saltea cada verdura por separado con soja y aceite de sésamo. Reserva.","Saltea la ternera con soja. Reserva.","Fríe los huevos con la yema blanda.","Monta el bol: arroz de base, verduras en secciones, carne en el centro y huevo encima.","Sirve con gochujang. Mezcla todo antes de comer."]},
+
+  {id:"w151",cuisine:"Coreana",flag:"🇰🇷",name:"Kimchi jjigae",time:"30 min",timeMin:30,diff:"Fácil",
+   desc:"El estofado de kimchi fermentado, contundente y picante. El alma de Corea.",
+   tags:["picante","sopa","fermentado"],
+   ingredients:[{c:300,u:"g",i:"kimchi fermentado"},{c:200,u:"g",i:"tofu firme"},{c:150,u:"g",i:"cerdo en dados"},{c:500,u:"ml",i:"caldo de anchoas o agua"},{c:2,u:"cucharadas",i:"gochugaru (chile coreano)"},{c:1,u:"cucharada",i:"salsa de soja"},{c:1,u:"cucharada",i:"aceite de sésamo"},{c:2,u:"ud",i:"cebolletas"}],
+   steps:["Saltea el cerdo con aceite de sésamo 3 min.","Añade el kimchi y el gochugaru. Saltea 2 min más.","Vierte el caldo y lleva a ebullición.","Añade el tofu en cubos y la soja. Cuece 15 min a fuego suave.","Sirve caliente con arroz blanco y cebolleta picada."]}
+];
+
+/* ════════════════════════════════════════
+   AMPLIACIÓN V7 — 1000 recetas originales de inspiración mundial
+   Generadas localmente, sin CDN, sin llamadas a internet.
+════════════════════════════════════════ */
+const EXTRA_WORLD_CUISINES = [
+  ["Española","🇪🇸","mediterránea","pimentón","aceite de oliva","perejil","vinagre de Jerez","arroz"],
+  ["Italiana","🇮🇹","italiana","orégano","aceite de oliva","albahaca","limón","pasta"],
+  ["Mexicana","🇲🇽","mexicana","comino","aceite vegetal","cilantro","lima","tortillas de maíz"],
+  ["Japonesa","🇯🇵","japonesa","jengibre","aceite de sésamo","cebollino","vinagre de arroz","arroz japonés"],
+  ["India","🇮🇳","india","garam masala","ghee","cilantro","yogur","arroz basmati"],
+  ["Francesa","🇫🇷","francesa","tomillo","mantequilla","perejil","vino blanco","patatas"],
+  ["Griega","🇬🇷","griega","orégano","aceite de oliva","eneldo","limón","pan pita"],
+  ["Marroquí","🇲🇦","marroquí","ras el hanout","aceite de oliva","cilantro","limón en conserva","cuscús"],
+  ["Americana","🇺🇸","americana","pimentón ahumado","aceite vegetal","cebollino","vinagre de manzana","patatas"],
+  ["Peruana","🇵🇪","peruana","ají amarillo","aceite vegetal","cilantro","lima","arroz blanco"],
+  ["Tailandesa","🇹🇭","tailandesa","curry rojo","aceite de coco","albahaca tailandesa","lima","arroz jazmín"],
+  ["China","🇨🇳","china","cinco especias","aceite de sésamo","cebolleta","vinagre negro","fideos de arroz"],
+  ["Árabe","🌙","levantina","zaatar","aceite de oliva","menta","limón","pan plano"],
+  ["Alemana","🇩🇪","alemana","mostaza en grano","mantequilla","perejil","vinagre","patatas"],
+  ["Brasileña","🇧🇷","brasileña","comino","aceite de dendê","cilantro","lima","farofa"],
+  ["Coreana","🇰🇷","coreana","gochugaru","aceite de sésamo","cebolleta","vinagre de arroz","arroz blanco"],
+  ["Vietnamita","🇻🇳","vietnamita","jengibre","aceite de cacahuete","menta","lima","fideos de arroz"],
+  ["Turca","🇹🇷","turca","sumac","aceite de oliva","perejil","yogur","bulgur"],
+  ["Libanesa","🇱🇧","libanesa","zaatar","aceite de oliva","menta","limón","trigo bulgur"],
+  ["Argentina","🇦🇷","argentina","chimichurri","aceite de oliva","perejil","vinagre","patatas"],
+  ["Colombiana","🇨🇴","colombiana","comino","aceite vegetal","cilantro","lima","arepas"],
+  ["Venezolana","🇻🇪","venezolana","achiote","aceite vegetal","cilantro","lima","arepas"],
+  ["Cubana","🇨🇺","cubana","comino","aceite vegetal","cilantro","naranja agria","arroz"],
+  ["Portuguesa","🇵🇹","portuguesa","pimentón","aceite de oliva","perejil","vino blanco","patatas"],
+  ["Británica","🇬🇧","británica","mostaza","mantequilla","perejil","vinagre de malta","patatas"],
+  ["Irlandesa","🇮🇪","irlandesa","pimienta negra","mantequilla","cebollino","sidra","patatas"],
+  ["Sueca","🇸🇪","sueca","eneldo","mantequilla","eneldo fresco","vinagre","patatas"],
+  ["Noruega","🇳🇴","noruega","eneldo","mantequilla","perejil","limón","pan de centeno"],
+  ["Rusa","🇷🇺","rusa","eneldo","mantequilla","eneldo fresco","vinagre","trigo sarraceno"],
+  ["Polaca","🇵🇱","polaca","mejorana","mantequilla","perejil","vinagre","patatas"],
+  ["Ucraniana","🇺🇦","ucraniana","eneldo","aceite de girasol","eneldo fresco","vinagre","patatas"],
+  ["Húngara","🇭🇺","húngara","pimentón dulce","manteca o aceite","perejil","vinagre","fideos"],
+  ["Georgiana","🇬🇪","georgiana","khmeli suneli","aceite de nuez","cilantro","vinagre de vino","pan plano"],
+  ["Etíope","🇪🇹","etíope","berbere","aceite especiado","cilantro","limón","injera"],
+  ["Nigeriana","🇳🇬","nigeriana","chile molido","aceite de palma","cilantro","lima","arroz jollof"],
+  ["Sudafricana","🇿🇦","sudafricana","curry suave","aceite vegetal","cilantro","chutney","arroz amarillo"],
+  ["Egipcia","🇪🇬","egipcia","comino","aceite de oliva","perejil","limón","arroz"],
+  ["Persa","🇮🇷","persa","cúrcuma","aceite de oliva","menta","limón seco","arroz basmati"],
+  ["Filipina","🇵🇭","filipina","laurel","aceite vegetal","cebollino","vinagre de caña","arroz blanco"],
+  ["Indonesia","🇮🇩","indonesia","sambal","aceite de coco","cilantro","lima kaffir","arroz"],
+  ["Malaya","🇲🇾","malaya","curry laksa","aceite de coco","cilantro","lima","fideos"],
+  ["Singapurense","🇸🇬","singapurense","pasta de chile","aceite de sésamo","cilantro","lima","fideos de arroz"],
+  ["Taiwanesa","🇹🇼","taiwanesa","cinco especias","aceite de sésamo","cebolleta","vinagre negro","arroz"],
+  ["Tibetana","🏔️","tibetana","comino","mantequilla","cebollino","yogur","fideos"],
+  ["Australiana","🇦🇺","australiana","pimienta limón","aceite de oliva","perejil","limón","patatas"],
+  ["Neozelandesa","🇳🇿","neozelandesa","romero","mantequilla","perejil","limón","kumara"],
+  ["Caribeña","🏝️","caribeña","allspice","aceite vegetal","cilantro","lima","arroz con coco"],
+  ["Dominicana","🇩🇴","dominicana","orégano dominicano","aceite vegetal","cilantro","naranja agria","plátano"],
+  ["Chilena","🇨🇱","chilena","merkén","aceite vegetal","cilantro","limón","papas"],
+  ["Boliviana","🇧🇴","boliviana","ají colorado","aceite vegetal","cilantro","lima","quinoa"]
+];
+
+const EXTRA_WORLD_ARCHETYPES = [
+  ["Arroz de inspiración {profile} con {protein} y {veg}","arroz",35,"Media"],
+  ["Sopa de inspiración {profile} de {veg} y {legume}","sopa",30,"Fácil"],
+  ["Guiso de inspiración {profile} de {protein} con {carb}","guiso",65,"Media"],
+  ["Pollo de inspiración {profile} al {spice}","pollo",40,"Fácil"],
+  ["Pescado de inspiración {profile} con {acid} y {herb}","pescado",25,"Fácil"],
+  ["Verduras de inspiración {profile} salteadas con {spice}","vegetariana",22,"Fácil"],
+  ["Fideos de inspiración {profile} con {protein} y verduras","fideos",28,"Fácil"],
+  ["Legumbres de inspiración {profile} con {veg}","legumbres",50,"Fácil"],
+  ["Pan plano de inspiración {profile} con hierbas","pan",75,"Media"],
+  ["Ensalada de inspiración {profile} de {veg} y {cheese}","ensalada",15,"Fácil"],
+  ["Dulce de inspiración {profile} de {fruit} y especias","postre",45,"Fácil"],
+  ["Huevos de inspiración {profile} con {veg}","huevos",18,"Fácil"],
+  ["Carne de inspiración {profile} estofada con {spice}","carne",90,"Media"],
+  ["Marisco de inspiración {profile} con {acid}","marisco",30,"Media"],
+  ["Curry de inspiración {profile} suave de {protein}","curry",38,"Fácil"],
+  ["Brochetas de inspiración {profile} de {protein}","brocheta",30,"Fácil"],
+  ["Bocadillo de inspiración {profile} de {protein} y salsa","street food",20,"Fácil"],
+  ["Empanadillas de inspiración {profile} de {veg} y queso","masa",60,"Media"],
+  ["Salsa de inspiración {profile} de {herb} y {acid}","salsa",12,"Fácil"],
+  ["Desayuno de inspiración {profile} con {carb} y {fruit}","desayuno",20,"Fácil"]
+];
+
+const EXTRA_WORLD_PROTEINS = ["pollo","ternera","cerdo","cordero","pavo","tofu","garbanzos","lentejas","huevo","salmón","bacalao","gambas","atún","setas"];
+const EXTRA_WORLD_VEGS     = ["tomate","berenjena","calabacín","zanahoria","espinacas","pimiento","col","setas","cebolla","calabaza","judías verdes","pepino"];
+const EXTRA_WORLD_LEGUMES  = ["lentejas","garbanzos","alubias","guisantes","habas"];
+const EXTRA_WORLD_CHEESES  = ["queso fresco","feta","yogur","queso rallado","ricotta","queso tierno"];
+const EXTRA_WORLD_FRUITS   = ["manzana","naranja","mango","plátano","piña","dátiles","pera","coco"];
+
+function tpl(str, data) {
+  return str.replace(/\{(\w+)\}/g, (_, k) => data[k] ?? "");
+}
+
+function buildWorldRecipeExpansion() {
+  const out = [];
+  let rid = 1;
+  EXTRA_WORLD_CUISINES.forEach(([cuisine, flag, profile, spice, fat, herb, acid, carb], ci) => {
+    EXTRA_WORLD_ARCHETYPES.forEach(([nameTpl, tag, baseTime, diff], ai) => {
+      const protein = EXTRA_WORLD_PROTEINS[(ci * 3 + ai) % EXTRA_WORLD_PROTEINS.length];
+      const veg     = EXTRA_WORLD_VEGS[(ci * 5 + ai) % EXTRA_WORLD_VEGS.length];
+      const legume  = EXTRA_WORLD_LEGUMES[(ci + ai) % EXTRA_WORLD_LEGUMES.length];
+      const cheese  = EXTRA_WORLD_CHEESES[(ci + ai) % EXTRA_WORLD_CHEESES.length];
+      const fruit   = EXTRA_WORLD_FRUITS[(ci * 2 + ai) % EXTRA_WORLD_FRUITS.length];
+      const name    = tpl(nameTpl, { profile, protein, veg, legume, carb, spice, fat, herb, acid, cheese, fruit });
+      const timeMin = baseTime + ((ci + ai) % 4) * 5;
+      const difficulty = (ai === 8 || ai === 12) && ci % 5 === 0 ? "Difícil" : diff;
+      const ingredients = [
+        { c:2, u:"cucharadas", i:fat },
+        { c:1, u:"ud", i:"cebolla" },
+        { c:2, u:"dientes", i:"ajo" },
+        { c:1, u:"cucharadita", i:spice },
+        { c:1, u:"puñado", i:herb },
+        { c:1, u:"pizca", i:"sal" }
+      ];
+      if (["arroz","guiso","desayuno"].includes(tag)) ingredients.unshift({ c:320, u:"g", i:carb });
+      else if (tag === "fideos") ingredients.unshift({ c:300, u:"g", i:"fideos" });
+      else if (["pan","masa"].includes(tag)) ingredients.unshift({ c:400, u:"g", i:"harina" }, { c:220, u:"ml", i:"agua tibia" });
+      else if (["sopa","legumbres"].includes(tag)) ingredients.unshift({ c:500, u:"ml", i:"caldo" }, { c:250, u:"g", i:legume });
+      else if (tag === "ensalada") ingredients.unshift({ c:250, u:"g", i:veg }, { c:120, u:"g", i:cheese });
+      else if (tag === "postre") ingredients.unshift({ c:300, u:"g", i:fruit }, { c:80, u:"g", i:"azúcar" });
+      else if (tag === "salsa") ingredients.unshift({ c:1, u:"manojo", i:herb }, { c:1, u:"ud", i:acid });
+      else ingredients.unshift({ c:500, u:"g", i:protein });
+
+      if (!["postre","salsa"].includes(tag)) ingredients.push({ c:250, u:"g", i:veg });
+      if (name.toLowerCase().includes("curry")) ingredients.push({ c:200, u:"ml", i:"leche de coco" });
+      if (["pescado","marisco","ensalada","salsa"].includes(tag)) ingredients.push({ c:1, u:"ud", i:acid });
+
+      let steps;
+      if (tag === "postre") {
+        steps = [
+          `Prepara ${fruit} en trozos y mézclalo con azúcar y una pizca de ${spice}.`,
+          "Cocina a fuego suave hasta que la fruta esté tierna y brillante.",
+          "Deja templar para que se concentren los aromas.",
+          `Sirve con un toque de ${herb} si encaja con tu gusto.`
+        ];
+      } else if (tag === "pan") {
+        steps = [
+          "Mezcla harina, agua, sal y aceite hasta obtener una masa manejable.",
+          "Amasa 8 minutos y deja reposar tapado hasta que relaje.",
+          `Añade ${herb} y una pizca de ${spice}; forma panes finos.`,
+          "Cocina en sartén caliente o al horno hasta que se doren por ambos lados."
+        ];
+      } else if (tag === "salsa") {
+        steps = [
+          `Pica muy fino ${herb}, ajo y cebolla.`,
+          `Mezcla con ${fat}, ${acid}, sal y ${spice}.`,
+          "Deja reposar 10 minutos para que se integren los sabores.",
+          "Usa como acompañamiento de verduras, carnes, arroz o pan."
+        ];
+      } else if (tag === "ensalada") {
+        steps = [
+          `Corta ${veg} en piezas regulares y colócalo en una fuente.`,
+          `Añade ${cheese}, ${herb}, sal y un aliño de ${fat} con ${acid}.`,
+          "Mezcla justo antes de servir para mantener la textura fresca.",
+          "Ajusta acidez y sal al final."
+        ];
+      } else {
+        const main = ["legumbres","sopa"].includes(tag) ? legume : protein;
+        const liquid = ["arroz","guiso","desayuno"].includes(tag) ? carb : "caldo o agua";
+        steps = [
+          `Sofríe cebolla y ajo con ${fat} hasta que estén transparentes.`,
+          `Añade ${spice} y remueve unos segundos para despertar el aroma.`,
+          `Incorpora ${main} y ${veg}; cocina hasta que tome color.`,
+          `Agrega ${liquid} si la receta lo pide y cuece hasta que esté tierno.`,
+          `Termina con ${herb}, un toque de ${acid} y reposo breve antes de servir.`
+        ];
+      }
+
+      out.push({
+        id:`extra-${String(rid).padStart(4, "0")}`,
+        cuisine, flag, name, time:`${timeMin} min`, timeMin, diff:difficulty,
+        desc:`Receta original inspirada en la cocina ${profile}: sabores reconocibles, ingredientes fáciles de adaptar y preparación pensada para casa.`,
+        tags:[tag, cuisine.toLowerCase(), profile, "mundial"],
+        ingredients, steps
+      });
+      rid++;
+    });
+  });
+  return out;
+}
+
+WORLD_RECIPES.push(...buildWorldRecipeExpansion());
+
+/* ════════════════════════════════════════
+   MOTOR MUNDIAL V8 — 1.000.000 recetas virtuales offline
+   No crea 1M objetos al cargar: genera cada receta solo cuando se necesita.
+════════════════════════════════════════ */
+const MEGA_WORLD_COUNT = 1000000;
+const MEGA_WORLD_VARIANTS = [
+  "de mercado", "casera", "de invierno", "de verano", "festiva", "rápida", "lenta", "de domingo",
+  "de montaña", "costera", "urbana", "rural", "picante suave", "picante intensa", "vegetal", "proteica",
+  "confort", "ligera", "de celebración", "de aprovechamiento", "familiar", "callejera", "de taberna", "de viaje"
+];
+const MEGA_WORLD_TECHNIQUES = [
+  "salteado", "guisado", "horneado", "marinado", "braseado", "asado", "al vapor", "a la plancha",
+  "en cazuela", "en sartén", "fermentado suave", "crudo aliñado", "relleno", "gratinado", "en caldo", "tostado"
+];
+
+function megaCuisineAt(index) {
+  return EXTRA_WORLD_CUISINES[index % EXTRA_WORLD_CUISINES.length];
+}
+
+function megaComponents(index) {
+  const C = EXTRA_WORLD_CUISINES.length;
+  const A = EXTRA_WORLD_ARCHETYPES.length;
+  const cuisineTuple = megaCuisineAt(index);
+  const [cuisine, flag, profile, spice, fat, herb, acid, carb] = cuisineTuple;
+  const arch = EXTRA_WORLD_ARCHETYPES[Math.floor(index / C) % A];
+  const variant = MEGA_WORLD_VARIANTS[Math.floor(index / (C * A)) % MEGA_WORLD_VARIANTS.length];
+  const technique = MEGA_WORLD_TECHNIQUES[Math.floor(index / (C * A * MEGA_WORLD_VARIANTS.length)) % MEGA_WORLD_TECHNIQUES.length];
+  const protein = EXTRA_WORLD_PROTEINS[(index * 3 + 7) % EXTRA_WORLD_PROTEINS.length];
+  const veg = EXTRA_WORLD_VEGS[(index * 5 + 11) % EXTRA_WORLD_VEGS.length];
+  const legume = EXTRA_WORLD_LEGUMES[(index * 7 + 13) % EXTRA_WORLD_LEGUMES.length];
+  const cheese = EXTRA_WORLD_CHEESES[(index * 11 + 17) % EXTRA_WORLD_CHEESES.length];
+  const fruit = EXTRA_WORLD_FRUITS[(index * 13 + 19) % EXTRA_WORLD_FRUITS.length];
+  return { cuisine, flag, profile, spice, fat, herb, acid, carb, arch, variant, technique, protein, veg, legume, cheese, fruit };
+}
+
+function buildMegaWorldRecipe(index) {
+  const idx = Math.max(0, Math.min(MEGA_WORLD_COUNT - 1, Number(index) || 0));
+  const m = megaComponents(idx);
+  const [nameTpl, tag, baseTime, diff] = m.arch;
+  const baseName = tpl(nameTpl, m);
+  const timeMin = baseTime + (idx % 6) * 5;
+  const difficulty = idx % 47 === 0 ? "Difícil" : (idx % 5 === 0 ? "Media" : diff);
+
+  const ingredients = [
+    { c:2, u:"cucharadas", i:m.fat },
+    { c:1, u:"ud", i:"cebolla" },
+    { c:2, u:"dientes", i:"ajo" },
+    { c:1, u:"cucharadita", i:m.spice },
+    { c:1, u:"puñado", i:m.herb },
+    { c:1, u:"pizca", i:"sal" }
+  ];
+  if (["arroz","guiso","desayuno"].includes(tag)) ingredients.unshift({ c:320, u:"g", i:m.carb });
+  else if (tag === "fideos") ingredients.unshift({ c:300, u:"g", i:"fideos" });
+  else if (["pan","masa"].includes(tag)) ingredients.unshift({ c:400, u:"g", i:"harina" }, { c:220, u:"ml", i:"agua tibia" });
+  else if (["sopa","legumbres"].includes(tag)) ingredients.unshift({ c:500, u:"ml", i:"caldo" }, { c:250, u:"g", i:m.legume });
+  else if (tag === "ensalada") ingredients.unshift({ c:250, u:"g", i:m.veg }, { c:120, u:"g", i:m.cheese });
+  else if (tag === "postre") ingredients.unshift({ c:300, u:"g", i:m.fruit }, { c:80, u:"g", i:"azúcar" });
+  else if (tag === "salsa") ingredients.unshift({ c:1, u:"manojo", i:m.herb }, { c:1, u:"ud", i:m.acid });
+  else ingredients.unshift({ c:500, u:"g", i:m.protein });
+  if (!["postre","salsa"].includes(tag)) ingredients.push({ c:250, u:"g", i:m.veg });
+  if (baseName.toLowerCase().includes("curry")) ingredients.push({ c:200, u:"ml", i:"leche de coco" });
+  if (["pescado","marisco","ensalada","salsa"].includes(tag)) ingredients.push({ c:1, u:"ud", i:m.acid });
+
+  const steps = tag === "postre" ? [
+    `Prepara ${m.fruit} en trozos y mézclalo con azúcar y una pizca de ${m.spice}.`,
+    `Cocina con técnica ${m.technique} suave hasta que la fruta esté tierna y brillante.`,
+    "Deja templar para que se concentren los aromas.",
+    `Sirve en versión ${m.variant} con un toque de ${m.herb}.`
+  ] : tag === "pan" ? [
+    "Mezcla harina, agua, sal y aceite hasta obtener una masa manejable.",
+    "Amasa 8 minutos y deja reposar tapado hasta que relaje.",
+    `Añade ${m.herb}, ${m.spice} y da forma en versión ${m.variant}.`,
+    `Cocina con acabado ${m.technique} hasta dorar.`
+  ] : tag === "salsa" ? [
+    `Pica muy fino ${m.herb}, ajo y cebolla.`,
+    `Mezcla con ${m.fat}, ${m.acid}, sal y ${m.spice}.`,
+    `Ajusta textura para una versión ${m.variant}.`,
+    "Usa como acompañamiento de verduras, carnes, arroz o pan."
+  ] : tag === "ensalada" ? [
+    `Corta ${m.veg} en piezas regulares y colócalo en una fuente.`,
+    `Añade ${m.cheese}, ${m.herb}, sal y un aliño de ${m.fat} con ${m.acid}.`,
+    `Termina con un perfil ${m.variant} y mezcla justo antes de servir.`,
+    "Ajusta acidez y sal al final."
+  ] : [
+    `Sofríe cebolla y ajo con ${m.fat} hasta que estén transparentes.`,
+    `Añade ${m.spice} y remueve unos segundos para despertar el aroma.`,
+    `Incorpora ${["legumbres","sopa"].includes(tag) ? m.legume : m.protein} y ${m.veg}; cocina hasta que tome color.`,
+    `Aplica técnica ${m.technique}; añade ${m.carb} o caldo si la receta lo pide y cuece hasta que esté tierno.`,
+    `Termina con ${m.herb}, un toque de ${m.acid} y reposo breve antes de servir.`
+  ];
+
+  return {
+    id:`mega-${idx}`, cuisine:m.cuisine, flag:m.flag,
+    name:`${baseName} · ${m.variant}`,
+    time:`${timeMin} min`, timeMin, diff:difficulty,
+    desc:`Receta virtual #${(idx + 1).toLocaleString("es-ES")} del motor millón: inspiración ${m.profile}, técnica ${m.technique} y enfoque ${m.variant}.`,
+    tags:[tag, m.cuisine.toLowerCase(), m.profile, m.variant, m.technique, "mega", "offline"],
+    ingredients, steps
+  };
+}
+
+function getWorldRecipeById(id) {
+  if (String(id || "").startsWith("mega-")) {
+    const idx = Number(String(id).slice(5));
+    if (Number.isInteger(idx) && idx >= 0 && idx < MEGA_WORLD_COUNT) return buildMegaWorldRecipe(idx);
+    return null;
+  }
+  return WORLD_RECIPES.find(r => r.id === id) || null;
+}
+
+function worldRecipeMatches(r, query, cuisine) {
+  const mc = cuisine === "Todas" || r.cuisine === cuisine;
+  if (!mc) return false;
+  if (!query) return true;
+  return normalizeText(r.name).includes(query) ||
+    normalizeText(r.desc).includes(query) ||
+    r.tags.some(t => normalizeText(t).includes(query)) ||
+    r.ingredients.some(i => normalizeText(i.i).includes(query));
+}
+
+function megaRecipeMatchesIndex(index, query, cuisine) {
+  const m = megaComponents(index);
+  if (cuisine !== "Todas" && m.cuisine !== cuisine) return false;
+  if (!query) return true;
+  const [nameTpl, tag] = m.arch;
+  const hay = normalizeText([
+    m.cuisine, m.flag, m.profile, m.spice, m.fat, m.herb, m.acid, m.carb,
+    nameTpl, tag, m.variant, m.technique, m.protein, m.veg, m.legume, m.cheese, m.fruit,
+    "mega", "offline", "mundial"
+  ].join(" "));
+  return hay.includes(query);
+}
+
+function countMegaCuisine(cuisine) {
+  if (cuisine === "Todas") return MEGA_WORLD_COUNT;
+  const cIndex = EXTRA_WORLD_CUISINES.findIndex(c => c[0] === cuisine);
+  if (cIndex < 0) return 0;
+  const C = EXTRA_WORLD_CUISINES.length;
+  return Math.floor((MEGA_WORLD_COUNT + C - 1 - cIndex) / C);
+}
+
+function scanMegaRecipes(query, cuisine, skip, limit) {
+  const visible = [];
+  if (!query) {
+    const total = countMegaCuisine(cuisine);
+    if (!limit) return { total, visible };
+    if (cuisine === "Todas") {
+      for (let pos = skip; pos < total && visible.length < limit; pos++) visible.push(buildMegaWorldRecipe(pos));
+    } else {
+      const cIndex = EXTRA_WORLD_CUISINES.findIndex(c => c[0] === cuisine);
+      const C = EXTRA_WORLD_CUISINES.length;
+      for (let pos = skip; pos < total && visible.length < limit; pos++) {
+        const idx = cIndex + pos * C;
+        if (idx < MEGA_WORLD_COUNT) visible.push(buildMegaWorldRecipe(idx));
+      }
+    }
+    return { total, visible };
+  }
+
+  let total = 0;
+  for (let i = 0; i < MEGA_WORLD_COUNT; i++) {
+    if (!megaRecipeMatchesIndex(i, query, cuisine)) continue;
+    if (total >= skip && visible.length < limit) visible.push(buildMegaWorldRecipe(i));
+    total++;
+  }
+  return { total, visible };
+}
+
+function addMegaCandidates(candidates, diff, timeFn, ingredient) {
+  const start = Math.floor(Math.random() * MEGA_WORLD_COUNT);
+  for (let n = 0; n < 900 && candidates.length < 220; n++) {
+    const idx = (start + n * 9973) % MEGA_WORLD_COUNT;
+    const wr = buildMegaWorldRecipe(idx);
+    if (diff && wr.diff !== diff) continue;
+    if (!timeFn(wr.timeMin)) continue;
+    if (ingredient) {
+      const hay = normalizeText(wr.ingredients.map(i => i.i).join(" "));
+      if (!hay.includes(ingredient)) continue;
+    }
+    candidates.push({ type:"world", wr });
+  }
+}
+
+
+/* ════════════════════════════════════════
+   ESTADO
+════════════════════════════════════════ */
+let recipes               = [];
+let categories            = [...DEFAULT_CATEGORIES];
+let foodSections          = structuredCloneSafe(DEFAULT_FOOD_SECTIONS);
+let plannerState          = {};
+let themePreference       = "";
+let sortPreference        = "";
+let lastBackupAt          = "";
+let currentCookRecipe     = null;
+let currentCookStep       = 0;
+let selectedImageData     = "";
+let deferredInstallPrompt = null;
+let timerInterval         = null;
+let timerRemaining        = 0;
+let timerInitial          = 0;
+let timerRunning          = false;
+let worldActiveCuisine    = "Todas";
+let currentWorldRecipe    = null;
+let worldVisibleLimit     = 120;
+let worldSearchTimer      = null;
+const WORLD_PAGE_SIZE     = 120;
+
+const $ = (s) => document.querySelector(s);
+
+const els = {
+  totalRecipes:          $("#totalRecipes"),
+  favoriteRecipes:       $("#favoriteRecipes"),
+  searchInput:           $("#searchInput"),
+  categoryFilter:        $("#categoryFilter"),
+  sortSelect:            $("#sortSelect"),
+  categoryInput:         $("#categoryInput"),
+  recipesGrid:           $("#recipesGrid"),
+  emptyState:            $("#emptyState"),
+  detailView:            $("#detailView"),
+  recipeForm:            $("#recipeForm"),
+  formTitle:             $("#formTitle"),
+  recipeId:              $("#recipeId"),
+  nameInput:             $("#nameInput"),
+  difficultyInput:       $("#difficultyInput"),
+  timeInput:             $("#timeInput"),
+  servingsInput:         $("#servingsInput"),
+  imageInput:            $("#imageInput"),
+  imageUrlInput:         $("#imageUrlInput"),
+  searchImageBtn:        $("#searchImageBtn"),
+  ingredientsContainer:  $("#ingredientsContainer"),
+  stepsInput:            $("#stepsInput"),
+  notesInput:            $("#notesInput"),
+  tagsInput:             $("#tagsInput"),
+  newRecipeBtn:          $("#newRecipeBtn"),
+  emptyNewBtn:           $("#emptyNewBtn"),
+  emptyWorldBtn:         $("#emptyWorldBtn"),
+  addIngredientBtn:      $("#addIngredientBtn"),
+  resetFormBtn:          $("#resetFormBtn"),
+  exampleBtn:            $("#exampleBtn"),
+  exportBtn:             $("#exportBtn"),
+  exportTxtBtn:          $("#exportTxtBtn"),
+  importBtn:             $("#importBtn"),
+  importFile:            $("#importFile"),
+  themeToggleBtn:        $("#themeToggleBtn"),
+  categoriesBtn:         $("#categoriesBtn"),
+  sectionsBtn:           $("#sectionsBtn"),
+  pwaNotice:             $("#pwaNotice"),
+  pwaNoticeText:         $("#pwaNoticeText"),
+  installBtn:            $("#installBtn"),
+  backupNotice:          $("#backupNotice"),
+  backupNoticeBtn:       $("#backupNoticeBtn"),
+  cookModal:             $("#cookModal"),
+  cookTitle:             $("#cookTitle"),
+  cookStepText:          $("#cookStepText"),
+  cookProgress:          $("#cookProgress"),
+  prevStepBtn:           $("#prevStepBtn"),
+  nextStepBtn:           $("#nextStepBtn"),
+  closeCookBtn:          $("#closeCookBtn"),
+  timerMinutesInput:     $("#timerMinutesInput"),
+  startTimerBtn:         $("#startTimerBtn"),
+  pauseTimerBtn:         $("#pauseTimerBtn"),
+  resetTimerBtn:         $("#resetTimerBtn"),
+  timerDisplay:          $("#timerDisplay"),
+  shoppingBtn:           $("#shoppingBtn"),
+  shoppingModal:         $("#shoppingModal"),
+  closeShoppingBtn:      $("#closeShoppingBtn"),
+  shoppingRecipeList:    $("#shoppingRecipeList"),
+  generateShoppingBtn:   $("#generateShoppingBtn"),
+  copyShoppingBtn:       $("#copyShoppingBtn"),
+  printShoppingBtn:      $("#printShoppingBtn"),
+  shoppingResult:        $("#shoppingResult"),
+  plannerBtn:            $("#plannerBtn"),
+  plannerModal:          $("#plannerModal"),
+  closePlannerBtn:       $("#closePlannerBtn"),
+  plannerGrid:           $("#plannerGrid"),
+  savePlannerBtn:        $("#savePlannerBtn"),
+  clearPlannerBtn:       $("#clearPlannerBtn"),
+  shoppingFromPlannerBtn:$("#shoppingFromPlannerBtn"),
+  categoriesModal:       $("#categoriesModal"),
+  closeCategoriesBtn:    $("#closeCategoriesBtn"),
+  catList:               $("#catList"),
+  newCatInput:           $("#newCatInput"),
+  addCatBtn:             $("#addCatBtn"),
+  saveCategoriesBtn:     $("#saveCategoriesBtn"),
+  sectionsModal:         $("#sectionsModal"),
+  closeSectionsBtn:      $("#closeSectionsBtn"),
+  secList:               $("#secList"),
+  newSecInput:           $("#newSecInput"),
+  addSecBtn:             $("#addSecBtn"),
+  saveSectionsBtn:       $("#saveSectionsBtn"),
+  worldBtn:              $("#worldBtn"),
+  worldModal:            $("#worldModal"),
+  closeWorldBtn:         $("#closeWorldBtn"),
+  worldSearch:           $("#worldSearch"),
+  worldFilters:          $("#worldFilters"),
+  worldGrid:             $("#worldGrid"),
+  worldDetailModal:      $("#worldDetailModal"),
+  closeWorldDetailBtn:   $("#closeWorldDetailBtn"),
+  worldDetailTitle:      $("#worldDetailTitle"),
+  worldDetailBody:       $("#worldDetailBody"),
+  addWorldRecipeBtn:     $("#addWorldRecipeBtn"),
+  cookWorldRecipeBtn:    $("#cookWorldRecipeBtn"),
+  inspireBtn:            $("#inspireBtn"),
+  inspireModal:          $("#inspireModal"),
+  closeInspireBtn:       $("#closeInspireBtn"),
+  inspireTime:           $("#inspireTime"),
+  inspireDiff:           $("#inspireDiff"),
+  inspireSource:         $("#inspireSource"),
+  inspireIngredient:     $("#inspireIngredient"),
+  surpriseMeBtn:         $("#surpriseMeBtn"),
+  findRecipesBtn:        $("#findRecipesBtn"),
+  inspireResult:         $("#inspireResult"),
+  toast:                 $("#toast")
+};
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+async function init() {
+  await loadAppState();
+  applyInitialTheme();
+  populateCategories();
+  await loadRecipes();
+  loadSortPreference();
+  addIngredientRow();
+  bindEvents();
+  registerServiceWorker();
+  setupPwaInstall();
+  checkBackupReminder();
+  render();
+}
+
+/* ─── CATEGORÍAS ─── */
+function saveCategories() {
+  dbSet(CATS_KEY, categories).then(ok => { if (!ok) showToast("⚠️ No se pudieron guardar las categorías."); });
+}
+function saveFoodSections() {
+  dbSet(SECTIONS_KEY, foodSections).then(ok => { if (!ok) showToast("⚠️ No se pudieron guardar las secciones."); });
+}
+
+function populateCategories() {
+  els.categoryFilter.innerHTML = `<option value="Todas">Todas las categorías</option>`;
+  categories.forEach(cat => {
+    const o = document.createElement("option"); o.value = cat; o.textContent = cat;
+    els.categoryFilter.appendChild(o);
+  });
+  const prev = els.categoryInput.value;
+  els.categoryInput.innerHTML = "";
+  categories.forEach(cat => {
+    const o = document.createElement("option"); o.value = cat; o.textContent = cat;
+    els.categoryInput.appendChild(o);
+  });
+  if (prev && categories.includes(prev)) els.categoryInput.value = prev;
+}
+
+/* ─── EVENTOS ─── */
+function bindEvents() {
+  els.searchInput.addEventListener("input", render);
+  els.categoryFilter.addEventListener("change", render);
+  els.sortSelect.addEventListener("change", () => { sortPreference = els.sortSelect.value; dbSet(SORT_KEY, sortPreference); render(); });
+  els.themeToggleBtn.addEventListener("click", toggleTheme);
+  els.newRecipeBtn.addEventListener("click", resetForm);
+  els.emptyNewBtn.addEventListener("click", resetForm);
+  els.emptyWorldBtn.addEventListener("click", openWorldModal);
+  els.addIngredientBtn.addEventListener("click", () => addIngredientRow());
+  els.resetFormBtn.addEventListener("click", resetForm);
+  els.recipeForm.addEventListener("submit", handleFormSubmit);
+  els.imageInput.addEventListener("change", handleImageInput);
+  els.searchImageBtn.addEventListener("click", () => {
+    const name = els.nameInput.value.trim() || "receta de cocina";
+    window.open("https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(name + " receta"), "_blank", "noopener,noreferrer");
+  });
+  els.exampleBtn.addEventListener("click", loadExamples);
+  els.exportBtn.addEventListener("click", exportJSON);
+  els.backupNoticeBtn.addEventListener("click", exportJSON);
+  els.exportTxtBtn.addEventListener("click", exportTXT);
+  els.importBtn.addEventListener("click", () => els.importFile.click());
+  els.importFile.addEventListener("change", importJSON);
+  els.closeCookBtn.addEventListener("click", closeCookMode);
+  els.prevStepBtn.addEventListener("click", prevCookStep);
+  els.nextStepBtn.addEventListener("click", nextCookStep);
+  els.startTimerBtn.addEventListener("click", startTimer);
+  els.pauseTimerBtn.addEventListener("click", pauseTimer);
+  els.resetTimerBtn.addEventListener("click", resetTimer);
+  els.shoppingBtn.addEventListener("click", openShoppingModal);
+  els.closeShoppingBtn.addEventListener("click", closeShoppingModal);
+  els.generateShoppingBtn.addEventListener("click", () => generateShoppingList());
+  els.copyShoppingBtn.addEventListener("click", copyShoppingList);
+  els.printShoppingBtn.addEventListener("click", printShoppingList);
+  els.plannerBtn.addEventListener("click", openPlannerModal);
+  els.closePlannerBtn.addEventListener("click", closePlannerModal);
+  els.savePlannerBtn.addEventListener("click", savePlanner);
+  els.clearPlannerBtn.addEventListener("click", clearPlanner);
+  els.shoppingFromPlannerBtn.addEventListener("click", generateShoppingFromPlanner);
+  els.categoriesBtn.addEventListener("click", openCategoriesModal);
+  els.closeCategoriesBtn.addEventListener("click", closeCategoriesModal);
+  els.addCatBtn.addEventListener("click", addCategoryFromInput);
+  els.newCatInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addCategoryFromInput(); } });
+  els.saveCategoriesBtn.addEventListener("click", saveCategoriesModal);
+  els.sectionsBtn.addEventListener("click", openSectionsModal);
+  els.closeSectionsBtn.addEventListener("click", closeSectionsModal);
+  els.addSecBtn.addEventListener("click", addSectionFromInput);
+  els.newSecInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addSectionFromInput(); } });
+  els.saveSectionsBtn.addEventListener("click", saveSectionsModal);
+  els.worldBtn.addEventListener("click", openWorldModal);
+  els.closeWorldBtn.addEventListener("click", closeWorldModal);
+  els.worldSearch.addEventListener("input", () => {
+    clearTimeout(worldSearchTimer);
+    worldSearchTimer = setTimeout(() => { worldVisibleLimit = WORLD_PAGE_SIZE; renderWorldGrid(); }, 180);
+  });
+  els.closeWorldDetailBtn.addEventListener("click", () => els.worldDetailModal.classList.remove("open"));
+  els.addWorldRecipeBtn.addEventListener("click", addWorldRecipeToMine);
+  els.cookWorldRecipeBtn.addEventListener("click", cookWorldRecipeNow);
+  els.inspireBtn.addEventListener("click", openInspireModal);
+  els.closeInspireBtn.addEventListener("click", () => els.inspireModal.classList.remove("open"));
+  els.surpriseMeBtn.addEventListener("click", surpriseMe);
+  els.findRecipesBtn.addEventListener("click", findRecipes);
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      closeCookMode(); closeShoppingModal(); closePlannerModal();
+      closeCategoriesModal(); closeSectionsModal(); closeWorldModal();
+      els.worldDetailModal.classList.remove("open");
+      els.inspireModal.classList.remove("open");
+    }
+    if (els.cookModal.classList.contains("open")) {
+      if (e.key === "ArrowRight") nextCookStep();
+      if (e.key === "ArrowLeft") prevCookStep();
+    }
+  });
+}
+
+/* ─── TEMA ─── */
+function applyInitialTheme() {
+  const d = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const t = themePreference || (d ? "dark" : "light");
+  document.documentElement.dataset.theme = t;
+  updateThemeButton(t);
+}
+function toggleTheme() {
+  const c = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+  const n = c === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = n;
+  themePreference = n;
+  dbSet(THEME_KEY, n);
+  updateThemeButton(n);
+}
+function updateThemeButton(t) {
+  if (!els.themeToggleBtn) return;
+  els.themeToggleBtn.textContent = t === "dark" ? "☀️" : "🌙";
+  els.themeToggleBtn.title = t === "dark" ? "Modo claro" : "Modo oscuro";
+  els.themeToggleBtn.setAttribute("aria-label", t === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+}
+
+/* ─── DATOS ─── */
+function loadSortPreference() { if (sortPreference) els.sortSelect.value = sortPreference; }
+async function loadRecipes() {
+  try {
+    const loaded = await loadRecipesFromIndexedDB();
+    recipes = Array.isArray(loaded) ? loaded.map(cleanImportedRecipe).filter(r => r.nombre) : [];
+  } catch {
+    recipes = [];
+    showToast("No se pudieron cargar las recetas.");
+  }
+}
+function saveRecipes() {
+  dbSet(STORAGE_KEY, recipes).then(ok => {
+    if (!ok) showToast("⚠️ No se pudo guardar en IndexedDB. Exporta un backup JSON.");
+  });
+}
+function createId() { return "recipe-" + Date.now() + "-" + Math.random().toString(16).slice(2); }
+function normalizeRecipeId(id) {
+  const value = String(id || "").trim();
+  return /^[a-zA-Z0-9._:-]{1,120}$/.test(value) ? value : createId();
+}
+
+/* ─── FILTROS ─── */
+function getFilteredRecipes() {
+  const q = normalizeText(els.searchInput.value);
+  const cat = els.categoryFilter.value;
+  return sortRecipes(recipes.filter(r => {
+    const mc = cat === "Todas" || r.categoria === cat;
+    const s = normalizeText([r.nombre, r.categoria, r.dificultad, r.notas, ...(r.etiquetas || []), ...(r.ingredientes || []).map(i => i.ingrediente)].join(" "));
+    return mc && (!q || s.includes(q));
+  }));
+}
+function sortRecipes(list) {
+  const s = els.sortSelect.value;
+  return [...list].sort((a, b) => {
+    if (s === "recent")     return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+    if (s === "oldest")     return new Date(a.createdAt) - new Date(b.createdAt);
+    if (s === "az")         return a.nombre.localeCompare(b.nombre, "es");
+    if (s === "za")         return b.nombre.localeCompare(a.nombre, "es");
+    if (s === "favorites")  return Number(b.favorita) - Number(a.favorita) || a.nombre.localeCompare(b.nombre, "es");
+    if (s === "category")   return a.categoria.localeCompare(b.categoria, "es") || a.nombre.localeCompare(b.nombre, "es");
+    if (s === "difficulty") return difficultyRank(a.dificultad) - difficultyRank(b.dificultad) || a.nombre.localeCompare(b.nombre, "es");
+    return 0;
+  });
+}
+function difficultyRank(v) { return { "Fácil": 1, "Media": 2, "Difícil": 3 }[v] || 99; }
+
+/* ─── RENDER ─── */
+function render() { renderStats(); renderRecipes(); }
+function renderStats() {
+  els.totalRecipes.textContent = recipes.length;
+  els.favoriteRecipes.textContent = recipes.filter(r => r.favorita).length;
+}
+function renderRecipes() {
+  const f = getFilteredRecipes();
+  els.recipesGrid.innerHTML = "";
+  els.emptyState.hidden = f.length > 0;
+  f.forEach(r => els.recipesGrid.appendChild(createRecipeCard(r)));
+}
+
+function createRecipeCard(recipe) {
+  const card = document.createElement("article");
+  card.className = "recipe-card";
+  card.setAttribute("role", "listitem");
+  const prev = (recipe.ingredientes || []).slice(0, 3).map(i => i.ingrediente).filter(Boolean).join(", ");
+  const imageSrc = safeImageSrc(recipe.imagen);
+  const img = imageSrc
+    ? `<img class="recipe-image" src="${escapeHTML(imageSrc)}" alt="Foto de ${escapeHTML(recipe.nombre)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`
+    : `<div class="image-placeholder" aria-hidden="true">🍽️</div>`;
+  card.innerHTML = `
+    ${img}
+    <div class="card-top">
+      <div>
+        <h2>${escapeHTML(recipe.nombre)}</h2>
+        <div class="meta">
+          <span class="pill">📂 ${escapeHTML(recipe.categoria)}</span>
+          <span class="pill">⏱ ${escapeHTML(recipe.tiempo || "Sin tiempo")}</span>
+          <span class="pill">🍽 ${escapeHTML(String(recipe.raciones || 1))} rac.</span>
+          <span class="pill">🔥 ${escapeHTML(recipe.dificultad)}</span>
+        </div>
+      </div>
+      <button class="favorite-btn ${recipe.favorita ? "active" : ""}"
+        aria-label="${recipe.favorita ? "Quitar favorita" : "Marcar favorita"}"
+        data-action="favorite">★</button>
+    </div>
+    <p class="subtitle">${escapeHTML(prev || "Sin ingredientes visibles")}</p>
+    <div class="tags">${(recipe.etiquetas || []).map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join("")}</div>
+    <div class="card-actions">
+      <button class="btn primary" data-action="view">Ver</button>
+      <button class="btn" data-action="edit">Editar</button>
+      <button class="btn" data-action="duplicate">Duplicar</button>
+      <button class="btn green" data-action="cook">Cocinar</button>
+      <button class="btn danger" data-action="delete">Eliminar</button>
+    </div>`;
+  card.querySelector('[data-action="view"]').addEventListener("click", () => showDetail(recipe.id));
+  card.querySelector('[data-action="edit"]').addEventListener("click", () => editRecipe(recipe.id));
+  card.querySelector('[data-action="delete"]').addEventListener("click", () => deleteRecipe(recipe.id));
+  card.querySelector('[data-action="favorite"]').addEventListener("click", () => toggleFavorite(recipe.id));
+  card.querySelector('[data-action="cook"]').addEventListener("click", () => openCookMode(recipe.id));
+  card.querySelector('[data-action="duplicate"]').addEventListener("click", () => duplicateRecipe(recipe.id));
+  addQuickShareToCard(card, recipe);
+  return card;
+}
+
+/* ─── UNIDADES ─── */
+function normalizeUnit(u) {
+  const c = normalizeText(String(u || "")).replace(/\.$/, "");
+  return UNIT_ALIASES[c] || String(u || "").trim();
+}
+function roundForUnit(v, u) {
+  const a = Number(v) || 0; if (!a) return 0;
+  if (u === "g" || u === "ml") return Math.round(a);
+  if (u === "kg" || u === "l") return Math.round(a * 100) / 100;
+  return Math.round(a * 4) / 4;
+}
+function formatFraction(v) {
+  const r = Math.round(v * 4) / 4; const w = Math.floor(r); const f = r - w;
+  const m = { 0.25: "¼", 0.5: "½", 0.75: "¾" };
+  if (f === 0) return String(w);
+  if (w === 0) return m[f] || formatAmount(r);
+  return `${w} ${m[f] || formatAmount(f)}`;
+}
+function formatCulinaryNumber(v, u) {
+  const a = Number(v) || 0; if (!a) return "";
+  if (INDIVISIBLE_UNITS.includes(u)) {
+    if (Number.isInteger(a)) return String(a);
+    if (a < 1) return "1 aprox.";
+    return `${Math.floor(a)}–${Math.ceil(a)}`;
+  }
+  if (["cucharadita", "cucharada", "taza", "vaso", "medida", "medidas"].includes(u)) return formatFraction(a);
+  return formatAmount(a);
+}
+function smartIngredientText(item, factor = 1) {
+  const raw = Number(item.cantidad) || 0; let a = raw * factor; let u = normalizeUnit(item.unidad);
+  const i = item.ingrediente || "";
+  if (!raw) return escapeHTML(i);
+  if (u === "g" && a >= 1000)        { a /= 1000; u = "kg"; }
+  else if (u === "kg" && a < 1)      { a *= 1000; u = "g"; }
+  else if (u === "ml" && a >= 1000)  { a /= 1000; u = "l"; }
+  else if (u === "l" && a < 1)       { a *= 1000; u = "ml"; }
+  a = roundForUnit(a, u);
+  const at = formatCulinaryNumber(a, u);
+  const p = u === "al gusto" ? "al gusto" : `${at}${u ? " " + u : ""}`.trim();
+  return `<strong>${escapeHTML(p)}</strong> ${escapeHTML(i)}`;
+}
+function smartIngredientPlainText(item, factor = 1) {
+  const raw = Number(item.cantidad) || 0; let a = raw * factor; let u = normalizeUnit(item.unidad);
+  const i = item.ingrediente || "";
+  if (!raw) return i;
+  if (u === "g" && a >= 1000)        { a /= 1000; u = "kg"; }
+  else if (u === "kg" && a < 1)      { a *= 1000; u = "g"; }
+  else if (u === "ml" && a >= 1000)  { a /= 1000; u = "l"; }
+  else if (u === "l" && a < 1)       { a *= 1000; u = "ml"; }
+  a = roundForUnit(a, u);
+  const at = formatCulinaryNumber(a, u);
+  const p = u === "al gusto" ? "al gusto" : `${at}${u ? " " + u : ""}`.trim();
+  return `${p} ${i}`.trim();
+}
+function normalizeIngredientForStorage(item) {
+  return { cantidad: Number(item.cantidad) || 0, unidad: normalizeUnit(item.unidad), ingrediente: String(item.ingrediente || "").trim() };
+}
+
+/* ─── FORMULARIO INGREDIENTES — BUG CORREGIDO: inputs[0/1/2] en vez de select ─── */
+function addIngredientRow(data = { cantidad: "", unidad: "", ingrediente: "" }) {
+  const row = document.createElement("div");
+  row.className = "ingredient-row"; row.setAttribute("role", "listitem");
+  row.innerHTML = `
+    <input type="number" min="0" step="0.01" placeholder="Cantidad"
+      value="${escapeHTML(String(data.cantidad))}" aria-label="Cantidad" />
+    <input type="text" list="unitOptions" placeholder="Unidad"
+      value="${escapeHTML(String(data.unidad))}" aria-label="Unidad" />
+    <input type="text" placeholder="Ingrediente"
+      value="${escapeHTML(String(data.ingrediente))}" aria-label="Ingrediente" />
+    <button type="button" class="small-btn" title="Eliminar" aria-label="Eliminar ingrediente">×</button>`;
+  row.querySelector("button").addEventListener("click", () => {
+    row.remove();
+    if (!els.ingredientsContainer.children.length) addIngredientRow();
+  });
+  els.ingredientsContainer.appendChild(row);
+}
+function getIngredientsFromForm() {
+  return Array.from(els.ingredientsContainer.querySelectorAll(".ingredient-row"))
+    .map(row => {
+      const inputs = row.querySelectorAll("input");
+      return normalizeIngredientForStorage({
+        cantidad:    inputs[0]?.value ?? "",
+        unidad:      inputs[1]?.value ?? "",
+        ingrediente: inputs[2]?.value ?? ""
+      });
+    }).filter(i => i.ingrediente);
+}
+
+/* ─── GUARDAR / EDITAR / ELIMINAR ─── */
+function handleFormSubmit(e) {
+  e.preventDefault();
+  const id = els.recipeId.value;
+  const nombre = els.nameInput.value.trim();
+  const ingredientes = getIngredientsFromForm();
+  if (!nombre) { showToast("La receta necesita un nombre."); els.nameInput.focus(); return; }
+  if (!ingredientes.length) { showToast("Añade al menos un ingrediente con nombre."); return; }
+  const now = new Date().toISOString();
+  const existing = id ? recipes.find(r => r.id === id) : null;
+  let imagen = existing?.imagen || "";
+  if (selectedImageData) imagen = selectedImageData;
+  else {
+    const u = els.imageUrlInput.value.trim();
+    if (u) {
+      showToast("Por privacidad/offline, no se guardan imágenes externas. Sube una imagen local.");
+      els.imageUrlInput.focus();
+      return;
+    }
+  }
+  const data = {
+    id: id || createId(), nombre,
+    categoria:  els.categoryInput.value,
+    dificultad: els.difficultyInput.value,
+    tiempo:     els.timeInput.value.trim(),
+    raciones:   Math.max(1, Number(els.servingsInput.value) || 1),
+    imagen, ingredientes,
+    pasos:     parseLines(els.stepsInput.value),
+    notas:     els.notesInput.value.trim(),
+    etiquetas: parseTags(els.tagsInput.value),
+    favorita:  existing?.favorita || false,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now
+  };
+  if (id) { recipes = recipes.map(r => r.id === id ? data : r); showToast("Receta actualizada."); }
+  else    { recipes.unshift(data); showToast("Receta guardada."); }
+  saveRecipes(); resetForm(); render(); showDetail(data.id);
+}
+
+function resetForm() {
+  els.formTitle.textContent = "Nueva receta"; els.recipeId.value = ""; selectedImageData = "";
+  els.recipeForm.reset();
+  els.categoryInput.value = categories[0] || "Otros";
+  els.difficultyInput.value = "Fácil"; els.servingsInput.value = 2; els.imageUrlInput.value = "";
+  els.ingredientsContainer.innerHTML = ""; addIngredientRow(); els.nameInput.focus();
+}
+
+function editRecipe(id) {
+  const r = recipes.find(x => x.id === id); if (!r) return;
+  els.formTitle.textContent = "Editar receta"; els.recipeId.value = r.id; selectedImageData = "";
+  els.nameInput.value = r.nombre;
+  if (categories.includes(r.categoria)) els.categoryInput.value = r.categoria;
+  els.difficultyInput.value = r.dificultad; els.timeInput.value = r.tiempo; els.servingsInput.value = r.raciones;
+  els.stepsInput.value = (r.pasos || []).join("\n"); els.notesInput.value = r.notas || "";
+  els.tagsInput.value = (r.etiquetas || []).join(", "); els.imageInput.value = "";
+  els.imageUrlInput.value = "";
+  els.ingredientsContainer.innerHTML = "";
+  (r.ingredientes || []).forEach(i => addIngredientRow(i));
+  if (!r.ingredientes?.length) addIngredientRow();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  showToast("Editando. Si no cambias la imagen, se conserva la actual.");
+}
+
+function deleteRecipe(id) {
+  const r = recipes.find(x => x.id === id); if (!r) return;
+  if (!confirm(`¿Eliminar "${r.nombre}"? Esta acción no se puede deshacer.`)) return;
+  recipes = recipes.filter(x => x.id !== id); saveRecipes();
+  if (els.detailView.innerHTML) els.detailView.innerHTML = "";
+  render(); showToast("Receta eliminada.");
+}
+
+function duplicateRecipe(id) {
+  const r = recipes.find(x => x.id === id); if (!r) return;
+  const now = new Date().toISOString();
+  const copy = { ...structuredCloneSafe(r), id: createId(), nombre: `${r.nombre} (copia)`, favorita: false, createdAt: now, updatedAt: now };
+  recipes.unshift(copy); saveRecipes(); render(); showDetail(copy.id); showToast("Receta duplicada.");
+}
+
+function structuredCloneSafe(v) { if (typeof structuredClone === "function") return structuredClone(v); return JSON.parse(JSON.stringify(v)); }
+function toggleFavorite(id) {
+  recipes = recipes.map(r => r.id !== id ? r : { ...r, favorita: !r.favorita, updatedAt: new Date().toISOString() });
+  saveRecipes(); render();
+}
+
+/* ─── DETALLE ─── */
+function showDetail(id) {
+  const recipe = recipes.find(r => r.id === id); if (!recipe) return;
+  const servings = Number(recipe.raciones) || 1;
+  const imageSrc = safeImageSrc(recipe.imagen);
+  const img = imageSrc
+    ? `<img src="${escapeHTML(imageSrc)}" alt="Foto de ${escapeHTML(recipe.nombre)}" style="width:100%;max-height:260px;object-fit:cover;border-radius:16px;margin-bottom:14px;" loading="lazy" decoding="async" referrerpolicy="no-referrer">`
+    : "";
+  els.detailView.innerHTML = `
+    <article class="detail" id="printableRecipe">
+      ${img}
+      <div class="card-top">
+        <div>
+          <h2>${recipe.favorita ? "★ " : ""}${escapeHTML(recipe.nombre)}</h2>
+          <div class="meta">
+            <span class="pill">📂 ${escapeHTML(recipe.categoria)}</span>
+            <span class="pill">🔥 ${escapeHTML(recipe.dificultad)}</span>
+            <span class="pill">⏱ ${escapeHTML(recipe.tiempo || "Sin tiempo")}</span>
+            <span class="pill">🍽 ${servings} raciones base</span>
+          </div>
+        </div>
+      </div>
+      <div class="scale-box no-print">
+        <div><strong>Escalador de raciones</strong><p class="subtitle">Cambia las raciones y las cantidades se ajustan automáticamente.</p></div>
+        <input id="scaleInput" type="number" min="1" step="1" value="${servings}" style="width:90px;" aria-label="Raciones" />
+      </div>
+      <div class="card-actions no-print">
+        <button class="btn" id="detailEditBtn">Editar</button>
+        <button class="btn" id="detailDuplicateBtn">Duplicar</button>
+        <button class="btn green" id="detailCookBtn">Modo cocina</button>
+        <button class="btn" id="detailPrintBtn">Imprimir</button>
+        <button class="btn danger" id="detailDeleteBtn">Eliminar</button>
+      </div>
+      <div class="share-panel no-print">
+        <p class="share-panel-title">📤 Compartir y exportar</p>
+        <div class="share-grid">
+          <button class="share-btn s-nat"  id="shareNativeBtn"><span class="si">📲</span>Compartir</button>
+          <button class="share-btn s-wa"   id="shareWaBtn"><span class="si">💬</span>WhatsApp</button>
+          <button class="share-btn s-tg"   id="shareTgBtn"><span class="si">✈️</span>Telegram</button>
+          <button class="share-btn s-mail" id="shareMailBtn"><span class="si">📧</span>Email</button>
+          <button class="share-btn s-img"  id="shareImgBtn"><span class="si">🖼️</span>Tarjeta</button>
+          <button class="share-btn s-qr"   id="shareQrBtn"><span class="si">🔗</span>Enlace visual</button>
+          <button class="share-btn s-link" id="shareLinkBtn"><span class="si">🔗</span>Enlace</button>
+          <button class="share-btn"        id="exportOneJsonBtn"><span class="si">📄</span>JSON</button>
+          <button class="share-btn"        id="exportOneTxtBtn"><span class="si">📝</span>TXT</button>
+          <button class="share-btn"        id="copyOneBtn"><span class="si">📋</span>Copiar</button>
+        </div>
+        <div class="img-card-preview" id="imgCardPreview"></div>
+      </div>
+      <div class="detail-section">
+        <h3>Ingredientes</h3>
+        <p id="printServingsText" class="subtitle"></p>
+        <ul class="ingredients-list" id="scaledIngredients"></ul>
+      </div>
+      <div class="detail-section">
+        <h3>Preparación</h3>
+        ${recipe.pasos?.length
+          ? `<ol class="steps-list">${recipe.pasos.map(s => `<li>${escapeHTML(s)}</li>`).join("")}</ol>`
+          : `<p class="subtitle">Sin pasos guardados.</p>`}
+      </div>
+      ${recipe.notas ? `<div class="detail-section"><h3>Notas</h3><p>${escapeHTML(recipe.notas).replaceAll("\n", "<br>")}</p></div>` : ""}
+      <div class="detail-section">
+        <h3>Etiquetas</h3>
+        <div class="tags">${(recipe.etiquetas || []).map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join("") || `<span class="subtitle">Sin etiquetas.</span>`}</div>
+      </div>
+      <div class="detail-section"><p class="subtitle">Creada: ${formatDate(recipe.createdAt)} · Modificada: ${formatDate(recipe.updatedAt)}</p></div>
+    </article>`;
+
+  const si = $("#scaleInput"), sil = $("#scaledIngredients"), spt = $("#printServingsText");
+  function rsi() {
+    const ts = Math.max(1, Number(si.value) || servings);
+    const f = ts / servings;
+    spt.textContent = `Raciones: ${ts}`;
+    sil.innerHTML = (recipe.ingredientes || []).map(i => `<li>${smartIngredientText(i, f)}</li>`).join("");
+  }
+  si.addEventListener("input", rsi); rsi();
+
+  $("#detailEditBtn").addEventListener("click", () => editRecipe(recipe.id));
+  $("#detailDuplicateBtn").addEventListener("click", () => duplicateRecipe(recipe.id));
+  $("#detailCookBtn").addEventListener("click", () => openCookMode(recipe.id));
+  $("#detailPrintBtn").addEventListener("click", () => window.print());
+  $("#detailDeleteBtn").addEventListener("click", () => deleteRecipe(recipe.id));
+
+  // ── COMPARTIR: 7 métodos ──────────────────────────────────
+  const recipeText = recipeToPlainText(recipe);
+  const recipeURL  = buildRecipeShareURL(recipe);
+
+  // 1. Menú nativo del sistema (Web Share API)
+  $("#shareNativeBtn").addEventListener("click", () => {
+    if (navigator.share) {
+      navigator.share({ title: recipe.nombre, text: recipeText, url: recipeURL }).catch(() => {});
+    } else {
+      showToast("Tu navegador no soporta el menú nativo. Usa los otros botones.");
+    }
+  });
+
+  // 2. WhatsApp
+  $("#shareWaBtn").addEventListener("click", () => {
+    window.open("https://wa.me/?text=" + encodeURIComponent(recipeText), "_blank", "noopener,noreferrer");
+  });
+
+  // 3. Telegram
+  $("#shareTgBtn").addEventListener("click", () => {
+    window.open("https://t.me/share/url?url=" + encodeURIComponent(recipeURL) + "&text=" + encodeURIComponent("🍳 " + recipe.nombre), "_blank", "noopener,noreferrer");
+  });
+
+  // 4. Email
+  $("#shareMailBtn").addEventListener("click", () => {
+    const subject = encodeURIComponent("Receta: " + recipe.nombre);
+    const body    = encodeURIComponent(recipeText);
+    window.open("mailto:?subject=" + subject + "&body=" + body);
+  });
+
+  // 5. Tarjeta imagen (Canvas)
+  $("#shareImgBtn").addEventListener("click", () => {
+    generateRecipeCard(recipe).then(canvas => {
+      const preview = $("#imgCardPreview");
+      preview.innerHTML = "";
+      preview.appendChild(canvas);
+      canvas.style.maxWidth = "100%";
+      const dlBtn = document.createElement("button");
+      dlBtn.className = "btn primary"; dlBtn.style.marginTop = "10px";
+      dlBtn.textContent = "⬇️ Descargar imagen";
+      dlBtn.addEventListener("click", () => {
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = "receta-" + slug(recipe.nombre) + ".png";
+        a.click();
+      });
+      preview.appendChild(dlBtn);
+      preview.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      showToast("Tarjeta generada. Descárgala o compártela.");
+    });
+  });
+
+  // 6. Enlace visual
+  $("#shareQrBtn").addEventListener("click", () => {
+    openQrModal(recipe.nombre, recipeURL);
+  });
+
+  // 7. Enlace directo (codificado en URL)
+  $("#shareLinkBtn").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(recipeURL);
+      showToast("🔗 Enlace copiado. Quien lo abra verá la receta directamente.");
+    } catch {
+      prompt("Copia este enlace:", recipeURL);
+    }
+  });
+
+  // Exportar JSON
+  $("#exportOneJsonBtn").addEventListener("click", () => {
+    downloadBlob(new Blob([JSON.stringify([recipe], null, 2)], { type: "application/json" }), `receta-${slug(recipe.nombre)}.json`);
+    showToast("Receta exportada como JSON.");
+  });
+
+  // Exportar TXT
+  $("#exportOneTxtBtn").addEventListener("click", () => {
+    downloadBlob(new Blob([recipeText], { type: "text/plain;charset=utf-8" }), `receta-${slug(recipe.nombre)}.txt`);
+    showToast("Receta exportada como TXT.");
+  });
+
+  // Copiar texto
+  $("#copyOneBtn").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(recipeText); showToast("Receta copiada al portapapeles."); }
+    catch { showToast("No se pudo copiar automáticamente."); }
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ════════════════════════════════════════
+   COMPARTIR — 7 MÉTODOS
+════════════════════════════════════════ */
+
+/* ── Registrar refs QR modal ── */
+const qrModalEls = {
+  modal:    document.getElementById("qrModal"),
+  title:    document.getElementById("qrModalTitle"),
+  desc:     document.getElementById("qrModalDesc"),
+  wrap:     document.getElementById("qrWrap"),
+  closeBtn: document.getElementById("closeQrBtn"),
+  dlBtn:    document.getElementById("downloadQrBtn"),
+  copyBtn:  document.getElementById("copyQrLinkBtn")
+};
+if (qrModalEls.closeBtn) {
+  qrModalEls.closeBtn.addEventListener("click", () => qrModalEls.modal.classList.remove("open"));
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape" && qrModalEls.modal) qrModalEls.modal.classList.remove("open"); });
+
+/* ── 7. Enlace directo: codifica la receta en base64 en la URL ── */
+function buildRecipeShareURL(recipe) {
+  try {
+    const minimal = {
+      nombre: recipe.nombre, categoria: recipe.categoria, dificultad: recipe.dificultad,
+      tiempo: recipe.tiempo, raciones: recipe.raciones,
+      ingredientes: recipe.ingredientes, pasos: recipe.pasos,
+      notas: recipe.notas, etiquetas: recipe.etiquetas
+    };
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(minimal))));
+    const base = window.location.href.split("?")[0].split("#")[0];
+    return base + "?receta=" + encoded;
+  } catch { return window.location.href; }
+}
+
+/* Al cargar la página, si viene ?receta= en la URL, la abre automáticamente */
+(function checkSharedRecipeURL() {
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get("receta");
+  if (!encoded) return;
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    if (!data || !data.nombre) return;
+    // Esperar a que init() haya terminado
+    setTimeout(() => {
+      const now = new Date().toISOString();
+      const tempRecipe = {
+        id: createId(), nombre: data.nombre, categoria: data.categoria || "Otros",
+        dificultad: data.dificultad || "Fácil", tiempo: data.tiempo || "",
+        raciones: data.raciones || 4, imagen: "",
+        ingredientes: Array.isArray(data.ingredientes) ? data.ingredientes : [],
+        pasos: Array.isArray(data.pasos) ? data.pasos : [],
+        notas: data.notas || "", etiquetas: Array.isArray(data.etiquetas) ? data.etiquetas : [],
+        favorita: false, createdAt: now, updatedAt: now,
+        _shared: true
+      };
+      // Mostrar en un modal de vista previa antes de guardar
+      showSharedRecipePreview(tempRecipe);
+      // Limpiar la URL sin recargar
+      window.history.replaceState({}, "", window.location.pathname);
+    }, 400);
+  } catch {}
+})();
+
+function showSharedRecipePreview(recipe) {
+  const existing = recipes.find(r => r.nombre === recipe.nombre);
+  const alreadySaved = !!existing;
+  const modal = document.createElement("div");
+  modal.className = "modal open";
+  modal.innerHTML = `
+    <div class="modal-card" style="max-width:600px;">
+      <div class="modal-top">
+        <h2>📨 Receta compartida</h2>
+        <button class="btn danger" id="closeSharedPreview">Cerrar</button>
+      </div>
+      <p class="subtitle">Alguien te ha compartido esta receta. Revísala y guárdala si quieres.</p>
+      <div style="background:var(--paper-2);border:1px solid var(--border);border-radius:16px;padding:16px;margin:12px 0;">
+        <h3 style="margin:0 0 8px;">${escapeHTML(recipe.nombre)}</h3>
+        <div class="meta">
+          <span class="pill">📂 ${escapeHTML(recipe.categoria)}</span>
+          <span class="pill">⏱ ${escapeHTML(recipe.tiempo || "—")}</span>
+          <span class="pill">🔥 ${escapeHTML(recipe.dificultad)}</span>
+          <span class="pill">🍽 ${recipe.raciones} rac.</span>
+        </div>
+        <h4 style="margin:12px 0 6px;">Ingredientes</h4>
+        <ul style="padding-left:20px;line-height:1.7;">${(recipe.ingredientes||[]).map(i=>`<li>${escapeHTML(smartIngredientPlainText(i))}</li>`).join("")}</ul>
+        <h4 style="margin:12px 0 6px;">Preparación</h4>
+        <ol style="padding-left:20px;line-height:1.7;">${(recipe.pasos||[]).map(s=>`<li>${escapeHTML(s)}</li>`).join("")}</ol>
+        ${recipe.notas ? `<p style="margin-top:10px;color:var(--muted);font-size:.9rem;"><strong>Notas:</strong> ${escapeHTML(recipe.notas)}</p>` : ""}
+      </div>
+      <div class="card-actions">
+        ${alreadySaved
+          ? `<button class="btn" disabled>Ya está en tu recetario</button>`
+          : `<button class="btn primary" id="saveSharedRecipe">💾 Guardar en mi recetario</button>`}
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.querySelector("#closeSharedPreview").addEventListener("click", () => modal.remove());
+  const saveBtn = modal.querySelector("#saveSharedRecipe");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      recipes.unshift(recipe); saveRecipes(); render();
+      showToast(`✅ "${recipe.nombre}" guardada en tu recetario.`);
+      modal.remove();
+    });
+  }
+}
+
+/* ── 5. Tarjeta imagen con Canvas ── */
+function generateRecipeCard(recipe) {
+  return new Promise(resolve => {
+    const W = 900, H = 540;
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const isDark = document.documentElement.dataset.theme === "dark";
+
+    // Fondo
+    const bg = isDark ? "#2b2118" : "#fffaf2";
+    const textColor = isDark ? "#f8ead8" : "#2d241c";
+    const mutedColor = isDark ? "#cdbba7" : "#74695e";
+    const accentColor = "#c46a32";
+
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    roundRect(ctx, 0, 0, W, H, 24);
+    ctx.fill();
+
+    // Franja superior
+    const grad = ctx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0, "#c46a32");
+    grad.addColorStop(0.5, "#d99a2b");
+    grad.addColorStop(1, "#5f8d5a");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, 10);
+
+    const canvasImageSrc = getCanvasSafeImageSrc(recipe.imagen);
+    const hasImage = !!canvasImageSrc;
+    const textX = hasImage ? 340 : 50;
+    const textW = hasImage ? W - 380 : W - 100;
+
+    function drawText() {
+      // Nombre
+      ctx.fillStyle = textColor;
+      ctx.font = "bold 34px system-ui, sans-serif";
+      wrapText(ctx, recipe.nombre, textX, 70, textW, 42);
+
+      // Pills de meta
+      const pills = [
+        `📂 ${recipe.categoria}`,
+        `⏱ ${recipe.tiempo || "—"}`,
+        `🔥 ${recipe.dificultad}`,
+        `🍽 ${recipe.raciones} raciones`
+      ];
+      let px = textX, py = 135;
+      ctx.font = "14px system-ui, sans-serif";
+      pills.forEach(pill => {
+        const pw = ctx.measureText(pill).width + 22;
+        ctx.fillStyle = isDark ? "#362719" : "#fff3df";
+        ctx.strokeStyle = isDark ? "#4a3828" : "#ead8bf";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        roundRect(ctx, px, py - 16, pw, 26, 13);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = mutedColor;
+        ctx.fillText(pill, px + 11, py + 4);
+        px += pw + 8;
+        if (px > textX + textW - 80) { px = textX; py += 34; }
+      });
+
+      // Ingredientes
+      const ingY = py + 44;
+      ctx.fillStyle = accentColor;
+      ctx.font = "bold 16px system-ui, sans-serif";
+      ctx.fillText("INGREDIENTES", textX, ingY);
+      ctx.fillStyle = textColor;
+      ctx.font = "15px system-ui, sans-serif";
+      const maxIng = 7;
+      const ings = (recipe.ingredientes || []).slice(0, maxIng);
+      ings.forEach((ing, i) => {
+        const line = `• ${smartIngredientPlainText(ing)}`;
+        ctx.fillText(line.length > 38 ? line.slice(0, 37) + "…" : line, textX, ingY + 24 + i * 22);
+      });
+      if ((recipe.ingredientes || []).length > maxIng) {
+        ctx.fillStyle = mutedColor;
+        ctx.fillText(`  + ${recipe.ingredientes.length - maxIng} más...`, textX, ingY + 24 + maxIng * 22);
+      }
+
+      // Logo + marca
+      ctx.fillStyle = accentColor;
+      ctx.font = "bold 13px system-ui, sans-serif";
+      ctx.fillText("Mi Recetario PRO 🍳", 30, H - 18);
+
+      resolve(canvas);
+    }
+
+    if (hasImage) {
+      const img = new Image();
+      img.onload = () => {
+        // Panel imagen izquierdo
+        ctx.save();
+        ctx.beginPath();
+        roundRect(ctx, 20, 20, 290, H - 40, 16);
+        ctx.clip();
+        ctx.drawImage(img, 20, 20, 290, H - 40);
+        ctx.restore();
+        drawText();
+      };
+      img.onerror = drawText;
+      img.src = canvasImageSrc;
+    } else {
+      // Placeholder decorativo
+      ctx.fillStyle = isDark ? "#362719" : "#fff3df";
+      ctx.beginPath();
+      roundRect(ctx, 20, 20, 290, H - 40, 16);
+      ctx.fill();
+      ctx.font = "72px serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🍽️", 165, H/2 + 24);
+      ctx.textAlign = "left";
+      drawText();
+    }
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(" ");
+  let line = "";
+  let lineCount = 0;
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + " ";
+    if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+      ctx.fillText(line, x, y + lineCount * lineHeight);
+      line = words[n] + " ";
+      lineCount++;
+      if (lineCount >= 2) { ctx.fillText(line.slice(0, 28) + "…", x, y + lineCount * lineHeight); return; }
+    } else { line = testLine; }
+  }
+  ctx.fillText(line, x, y + lineCount * lineHeight);
+}
+
+/* ── 6. Enlace compartible — generado con Canvas puro, sin librería externa ── */
+let _qrCurrentURL = "";
+
+function openQrModal(title, url) {
+  _qrCurrentURL = url;
+  qrModalEls.title.textContent = "🔗 " + title;
+  qrModalEls.desc.textContent = "Enlace privado codificado en la URL. Puedes copiarlo o descargar esta tarjeta visual. No es un QR real: evita librerías externas y servicios de terceros.";
+  qrModalEls.wrap.innerHTML = "";
+  const canvas = generateQRCanvas(url, 260);
+  qrModalEls.wrap.appendChild(canvas);
+  qrModalEls.modal.classList.add("open");
+  qrModalEls.dlBtn.onclick = () => {
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = "enlace-receta.png"; a.click();
+  };
+  qrModalEls.copyBtn.onclick = async () => {
+    try { await navigator.clipboard.writeText(url); showToast("Enlace copiado."); }
+    catch { prompt("Copia este enlace:", url); }
+  };
+}
+
+/* Tarjeta offline de enlace compartible. Sin llamadas a CDN ni APIs externas. */
+function generateQRCanvas(text, size) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  drawShareLinkCard(ctx, text, size);
+  return canvas;
+}
+
+function drawShareLinkCard(ctx, text, size) {
+  const isDark = document.documentElement.dataset.theme === "dark";
+  ctx.fillStyle = isDark ? "#2b2118" : "#fffaf2";
+  ctx.fillRect(0, 0, size, size);
+  ctx.strokeStyle = isDark ? "#4a3828" : "#ead8bf";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(4, 4, size - 8, size - 8);
+
+  const grad = ctx.createLinearGradient(0, 0, size, 0);
+  grad.addColorStop(0, "#c46a32");
+  grad.addColorStop(0.5, "#d99a2b");
+  grad.addColorStop(1, "#5f8d5a");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, 10);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = isDark ? "#f8ead8" : "#2d241c";
+  ctx.font = "bold 44px system-ui, sans-serif";
+  ctx.fillText("🍳", size / 2, 78);
+  ctx.font = "bold 18px system-ui, sans-serif";
+  ctx.fillText("Receta compartida", size / 2, 112);
+  ctx.font = "13px system-ui, sans-serif";
+  ctx.fillStyle = isDark ? "#cdbba7" : "#74695e";
+  ctx.textAlign = "left";
+  wrapText(ctx, "Copia el enlace para abrirla en Mi Recetario PRO.", 28, 145, size - 56, 18);
+  ctx.textAlign = "center";
+
+  ctx.fillStyle = isDark ? "#362719" : "#fff3df";
+  ctx.strokeStyle = isDark ? "#4a3828" : "#ead8bf";
+  ctx.beginPath();
+  roundRect(ctx, 18, size - 86, size - 36, 54, 14);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = isDark ? "#f8ead8" : "#2d241c";
+  ctx.font = "bold 12px system-ui, sans-serif";
+  const short = text.length > 56 ? text.slice(0, 53) + "…" : text;
+  ctx.fillText(short, size / 2, size - 54);
+  ctx.textAlign = "left";
+}
+
+/* Botón de compartir rápido en tarjetas de receta */
+function addQuickShareToCard(card, recipe) {
+  const btn = document.createElement("button");
+  btn.className = "card-share-btn";
+  btn.title = "Compartir receta";
+  btn.setAttribute("aria-label", "Compartir " + recipe.nombre);
+  btn.textContent = "📤";
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    const text = recipeToPlainText(recipe);
+    if (navigator.share) {
+      navigator.share({ title: recipe.nombre, text, url: buildRecipeShareURL(recipe) }).catch(() => {});
+    } else {
+      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener,noreferrer");
+    }
+  });
+  card.appendChild(btn);
+}
+
+/* Sin librerías externas: la app mantiene su promesa offline-first. */
+
+function recipeToPlainText(r) {
+  const lines = [r.nombre.toUpperCase(), "=".repeat(Math.min(r.nombre.length, 50)),
+    `Categoría: ${r.categoria || ""}`, `Dificultad: ${r.dificultad || ""}`,
+    `Tiempo: ${r.tiempo || ""}`, `Raciones: ${r.raciones || 1}`, "", "Ingredientes:"];
+  (r.ingredientes || []).forEach(i => lines.push("- " + smartIngredientPlainText(i)));
+  lines.push("", "Preparación:");
+  if (r.pasos?.length) r.pasos.forEach((s, idx) => lines.push(`${idx + 1}. ${s}`));
+  else lines.push("Sin pasos.");
+  if (r.notas) { lines.push("", "Notas:", r.notas); }
+  if (r.etiquetas?.length) { lines.push("", "Etiquetas: " + r.etiquetas.map(t => "#" + t).join(" ")); }
+  return lines.join("\n");
+}
+
+/* ─── MODO COCINA ─── */
+function openCookMode(id) {
+  const r = recipes.find(x => x.id === id); if (!r) return;
+  currentCookRecipe = r; currentCookStep = 0;
+  els.cookTitle.textContent = `Modo cocina · ${r.nombre}`;
+  els.cookModal.classList.add("open"); stopTimer(); renderCookStep();
+}
+function renderCookStep() {
+  if (!currentCookRecipe) return;
+  const steps = currentCookRecipe.pasos?.length ? currentCookRecipe.pasos : ["Esta receta no tiene pasos. Añádelos desde Editar receta."];
+  currentCookStep = Math.min(Math.max(currentCookStep, 0), steps.length - 1);
+  els.cookStepText.textContent = steps[currentCookStep];
+  els.cookProgress.textContent = `Paso ${currentCookStep + 1} de ${steps.length}`;
+  els.prevStepBtn.disabled = currentCookStep === 0;
+  els.nextStepBtn.disabled = currentCookStep === steps.length - 1;
+  const d = detectMinutes(steps[currentCookStep]);
+  els.timerMinutesInput.value = d || ""; stopTimer();
+}
+function detectMinutes(t) { const m = String(t || "").match(/(\d+)\s*(min|minutos|minute|minutes)/i); return m ? Number(m[1]) : ""; }
+function startTimer() {
+  const min = Number(els.timerMinutesInput.value);
+  if (!min && timerRemaining <= 0) { showToast("Escribe los minutos."); return; }
+  if (timerRemaining <= 0) { timerRemaining = Math.round(min * 60); timerInitial = timerRemaining; }
+  clearInterval(timerInterval); timerRunning = true;
+  timerInterval = setInterval(() => {
+    timerRemaining--; updateTimerDisplay();
+    if (timerRemaining <= 0) { stopTimer(false); showToast("⏰ Temporizador terminado."); try { navigator.vibrate?.([200, 100, 200]); } catch {} }
+  }, 1000);
+  updateTimerDisplay();
+}
+function pauseTimer()  { clearInterval(timerInterval); timerRunning = false; showToast("Temporizador pausado."); }
+function resetTimer()  { timerRemaining = timerInitial || Math.round((Number(els.timerMinutesInput.value) || 0) * 60); clearInterval(timerInterval); timerRunning = false; updateTimerDisplay(); }
+function stopTimer(r = true) { clearInterval(timerInterval); timerRunning = false; if (r) { timerRemaining = 0; timerInitial = 0; } updateTimerDisplay(); }
+function updateTimerDisplay() { const s = Math.max(0, timerRemaining); els.timerDisplay.textContent = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; }
+function prevCookStep() { currentCookStep--; renderCookStep(); }
+function nextCookStep() { currentCookStep++; renderCookStep(); }
+function closeCookMode() { els.cookModal.classList.remove("open"); currentCookRecipe = null; currentCookStep = 0; stopTimer(); }
+
+/* ─── LISTA DE LA COMPRA ─── */
+function openShoppingModal() {
+  if (!recipes.length) { showToast("No hay recetas para generar la lista."); return; }
+  els.shoppingRecipeList.innerHTML = recipes.map(r => `<label class="recipe-checkbox"><input type="checkbox" value="${escapeHTML(r.id)}" />${escapeHTML(r.nombre)}</label>`).join("");
+  els.shoppingResult.innerHTML = ""; els.shoppingModal.classList.add("open");
+}
+function closeShoppingModal() { els.shoppingModal.classList.remove("open"); }
+function generateShoppingList(ids = null) {
+  const sel = ids || Array.from(els.shoppingRecipeList.querySelectorAll("input:checked")).map(i => i.value);
+  if (!sel.length) { showToast("Selecciona al menos una receta."); return; }
+  renderShoppingResult(recipes.filter(r => sel.includes(r.id)));
+}
+function renderShoppingResult(sel) {
+  const grouped = new Map();
+  sel.forEach(r => (r.ingredientes || []).forEach(item => {
+    const sec = classifyIngredient(item.ingrediente);
+    const n = normalizeIngredientForStorage(item);
+    const key = normalizeText(`${sec}|${n.ingrediente}|${n.unidad}`);
+    const prev = grouped.get(key);
+    if (prev) prev.cantidad += Number(n.cantidad) || 0;
+    else grouped.set(key, { section: sec, ingrediente: n.ingrediente, unidad: n.unidad, cantidad: Number(n.cantidad) || 0 });
+  }));
+  const bySection = {};
+  grouped.forEach(i => { if (!bySection[i.section]) bySection[i.section] = []; bySection[i.section].push(i); });
+  const order = Object.keys(foodSections);
+  els.shoppingResult.innerHTML = `<h3>Lista generada</h3><div id="shoppingListText">
+    ${order.filter(s => bySection[s]?.length).map(s => `
+      <div class="shopping-section"><h3>${escapeHTML(s)}</h3>
+        <ul class="shopping-list">
+          ${bySection[s].sort((a, b) => a.ingrediente.localeCompare(b.ingrediente, "es")).map(i => `<li>${smartIngredientText(i)}</li>`).join("")}
+        </ul>
+      </div>`).join("")}
+  </div>`;
+}
+function classifyIngredient(name) {
+  const n = normalizeText(name);
+  for (const [sec, words] of Object.entries(foodSections)) {
+    if (sec === "Otros") continue;
+    if (words.some(w => n.includes(normalizeText(w)))) return sec;
+  }
+  return "Otros";
+}
+function getShoppingText() {
+  const l = $("#shoppingListText"); if (!l) return "";
+  return Array.from(l.querySelectorAll(".shopping-section")).map(s => {
+    const t = s.querySelector("h3")?.textContent.trim() || "Otros";
+    const items = Array.from(s.querySelectorAll("li")).map(li => "- " + li.textContent.replace(/\s+/g, " ").trim()).join("\n");
+    return `${t}\n${items}`;
+  }).join("\n\n");
+}
+async function copyShoppingList() {
+  const t = getShoppingText(); if (!t) { showToast("Primero genera la lista."); return; }
+  try { await navigator.clipboard.writeText(t); showToast("Lista copiada."); }
+  catch { showToast("No se pudo copiar automáticamente."); }
+}
+function printShoppingList() {
+  const t = getShoppingText(); if (!t) { showToast("Primero genera la lista."); return; }
+  const w = window.open("", "_blank"); if (!w) { showToast("El navegador bloqueó la ventana de impresión."); return; }
+  w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Lista de la compra</title><style>body{font-family:system-ui,sans-serif;padding:32px;line-height:1.6;}h1{margin-top:0;}pre{white-space:pre-wrap;font-size:16px;}</style></head><body><h1>Lista de la compra</h1><pre>${escapeHTML(t)}</pre><script>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+/* ─── PLANIFICADOR ─── */
+function openPlannerModal()    { renderPlanner(); els.plannerModal.classList.add("open"); }
+function closePlannerModal()   { els.plannerModal.classList.remove("open"); }
+function getPlanner()          { return plannerState && typeof plannerState === "object" ? plannerState : {}; }
+function renderPlanner() {
+  const p = getPlanner();
+  els.plannerGrid.innerHTML = DAYS.map(d => `
+    <div class="day-card" role="listitem">
+      <h3>${d}</h3>
+      <select data-day="${escapeHTML(d)}" aria-label="Receta para ${escapeHTML(d)}">
+        <option value="">Sin receta</option>
+        ${recipes.map(r => `<option value="${escapeHTML(r.id)}" ${p[d] === r.id ? "selected" : ""}>${escapeHTML(r.nombre)}</option>`).join("")}
+      </select>
+    </div>`).join("");
+}
+function savePlanner() {
+  const p = {};
+  els.plannerGrid.querySelectorAll("select").forEach(s => { p[s.dataset.day] = s.value; });
+  plannerState = p;
+  dbSet(PLANNER_KEY, plannerState);
+  showToast("Semana guardada.");
+}
+function clearPlanner() {
+  plannerState = {};
+  dbRemove(PLANNER_KEY);
+  renderPlanner();
+  showToast("Planificador vaciado.");
+}
+function generateShoppingFromPlanner() {
+  savePlanner();
+  const ids = Object.values(getPlanner()).filter(Boolean);
+  if (!ids.length) { showToast("No hay recetas en la semana."); return; }
+  closePlannerModal(); openShoppingModal(); generateShoppingList(ids);
+}
+
+/* ─── CATEGORÍAS EDITABLES ─── */
+function openCategoriesModal() { renderCatList(); els.categoriesModal.classList.add("open"); }
+function closeCategoriesModal() { els.categoriesModal.classList.remove("open"); }
+function renderCatList() {
+  els.catList.innerHTML = categories.map((cat, i) => `
+    <div class="cat-item">
+      <input type="text" value="${escapeHTML(cat)}" aria-label="Categoría ${escapeHTML(cat)}"
+        ${cat === "Otros" ? `readonly style="opacity:.55"` : ""} />
+      ${cat !== "Otros" ? `<button class="small-btn" data-del-cat="${i}" aria-label="Eliminar ${escapeHTML(cat)}">×</button>` : ""}
+    </div>`).join("");
+  els.catList.querySelectorAll("[data-del-cat]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.delCat); const name = categories[idx];
+      if (!confirm(`¿Eliminar la categoría "${name}"? Las recetas pasarán a "Otros".`)) return;
+      recipes = recipes.map(r => r.categoria === name ? { ...r, categoria: "Otros" } : r);
+      categories.splice(idx, 1); renderCatList();
+    });
+  });
+}
+function addCategoryFromInput() {
+  const v = els.newCatInput.value.trim(); if (!v) return;
+  if (categories.map(c => normalizeText(c)).includes(normalizeText(v))) { showToast("Esa categoría ya existe."); return; }
+  const oi = categories.indexOf("Otros");
+  oi !== -1 ? categories.splice(oi, 0, v) : categories.push(v);
+  els.newCatInput.value = ""; renderCatList();
+}
+function saveCategoriesModal() {
+  const inputs = els.catList.querySelectorAll("input[type='text']");
+  const nc = [];
+  inputs.forEach(i => { const v = i.value.trim(); if (v && !nc.map(c => normalizeText(c)).includes(normalizeText(v))) nc.push(v); });
+  if (!nc.includes("Otros")) nc.push("Otros");
+  categories = nc; saveCategories(); populateCategories(); closeCategoriesModal(); showToast("Categorías guardadas.");
+}
+
+/* ─── SECCIONES EDITABLES ─── */
+function openSectionsModal() { renderSecList(); els.sectionsModal.classList.add("open"); }
+function closeSectionsModal() { els.sectionsModal.classList.remove("open"); }
+function renderSecList() {
+  const entries = Object.entries(foodSections);
+  els.secList.innerHTML = entries.map(([name, words], i) => `
+    <div class="sec-item">
+      <div class="sec-item-top">
+        <input type="text" value="${escapeHTML(name)}" aria-label="Sección ${escapeHTML(name)}"
+          ${name === "Otros" ? `readonly style="opacity:.55"` : ""} />
+        ${name !== "Otros" ? `<button class="small-btn" data-del-sec="${i}" aria-label="Eliminar sección ${escapeHTML(name)}">×</button>` : ""}
+      </div>
+      <div class="sec-keywords">Palabras clave:
+        <input type="text" value="${escapeHTML(words.join(", "))}" placeholder="tomate, cebolla..." />
+      </div>
+    </div>`).join("");
+  els.secList.querySelectorAll("[data-del-sec]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.delSec); const sn = Object.keys(foodSections)[idx];
+      if (sn === "Otros") return;
+      if (!confirm(`¿Eliminar la sección "${sn}"?`)) return;
+      delete foodSections[sn]; renderSecList();
+    });
+  });
+}
+function addSectionFromInput() {
+  const v = els.newSecInput.value.trim(); if (!v) return;
+  if (foodSections[v] !== undefined) { showToast("Esa sección ya existe."); return; }
+  const ns = {};
+  Object.entries(foodSections).forEach(([k, val]) => { if (k === "Otros") ns[v] = []; ns[k] = val; });
+  if (!ns[v]) ns[v] = [];
+  foodSections = ns; els.newSecInput.value = ""; renderSecList();
+}
+function saveSectionsModal() {
+  const items = els.secList.querySelectorAll(".sec-item"); const ns = {};
+  items.forEach(item => {
+    const ni = item.querySelector(".sec-item-top input"); const ki = item.querySelector(".sec-keywords input");
+    const name = ni?.value.trim(); if (!name) return;
+    ns[name] = (ki?.value || "").split(",").map(w => w.trim()).filter(Boolean);
+  });
+  if (!ns["Otros"]) ns["Otros"] = [];
+  foodSections = ns; saveFoodSections(); closeSectionsModal(); showToast("Secciones guardadas.");
+}
+
+/* ════════════════════════════════════════
+   COCINAS DEL MUNDO
+════════════════════════════════════════ */
+const CUISINE_FLAGS = {
+  Española:"🇪🇸", Italiana:"🇮🇹", Mexicana:"🇲🇽", Japonesa:"🇯🇵",
+  India:"🇮🇳", Francesa:"🇫🇷", Griega:"🇬🇷", Marroquí:"🇲🇦",
+  Americana:"🇺🇸", Peruana:"🇵🇪", Tailandesa:"🇹🇭", China:"🇨🇳",
+  Árabe:"🌙", Alemana:"🇩🇪", Brasileña:"🇧🇷", Coreana:"🇰🇷", Todas:"🌍"
+};
+Object.assign(CUISINE_FLAGS, Object.fromEntries(EXTRA_WORLD_CUISINES.map(c => [c[0], c[1]])));
+
+
+function openWorldModal() {
+  worldActiveCuisine = "Todas"; worldVisibleLimit = WORLD_PAGE_SIZE; els.worldSearch.value = "";
+  renderWorldFilters(); renderWorldGrid();
+  els.worldModal.classList.add("open");
+}
+function closeWorldModal() { els.worldModal.classList.remove("open"); }
+
+function renderWorldFilters() {
+  const cuisines = ["Todas", ...new Set([...WORLD_RECIPES.map(r => r.cuisine), ...EXTRA_WORLD_CUISINES.map(c => c[0])])];
+  els.worldFilters.innerHTML = cuisines.map(c =>
+    `<button class="cuisine-btn ${c === worldActiveCuisine ? "active" : ""}" data-cuisine="${escapeHTML(c)}">${CUISINE_FLAGS[c] || "🍽️"} ${escapeHTML(c)}</button>`
+  ).join("");
+  els.worldFilters.querySelectorAll(".cuisine-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      worldActiveCuisine = btn.dataset.cuisine;
+      worldVisibleLimit = WORLD_PAGE_SIZE;
+      renderWorldFilters(); renderWorldGrid();
+    });
+  });
+}
+
+function renderWorldGrid() {
+  const query = normalizeText(els.worldSearch.value);
+  const baseFiltered = WORLD_RECIPES.filter(r => worldRecipeMatches(r, query, worldActiveCuisine));
+  const visibleBase = baseFiltered.slice(0, worldVisibleLimit);
+  const megaSkip = Math.max(0, worldVisibleLimit <= baseFiltered.length ? 0 : worldVisibleLimit - baseFiltered.length - Math.max(0, worldVisibleLimit - baseFiltered.length));
+  const megaLimit = Math.max(0, worldVisibleLimit - visibleBase.length);
+  const mega = scanMegaRecipes(query, worldActiveCuisine, 0, megaLimit);
+  const total = baseFiltered.length + mega.total;
+  const visible = [...visibleBase, ...mega.visible];
+
+  if (!total) {
+    els.worldGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">
+      <div style="font-size:3rem;margin-bottom:12px;">🔍</div>
+      <p>No se encontraron recetas con esa búsqueda.</p></div>`;
+    return;
+  }
+
+  els.worldGrid.innerHTML = `
+    <div class="world-counter">🌍 ${total.toLocaleString("es-ES")} recetas encontradas · mostrando ${visible.length.toLocaleString("es-ES")} · motor millón offline activo</div>
+  ` + visible.map(r => `
+    <article class="world-card" role="listitem">
+      <span class="cuisine-flag">${escapeHTML(r.flag)}</span>
+      <h3>${escapeHTML(r.name)}</h3>
+      <div class="world-meta">
+        <span class="world-pill">⏱ ${escapeHTML(r.time)}</span>
+        <span class="world-pill">🔥 ${escapeHTML(r.diff)}</span>
+        <span class="world-pill">📂 ${escapeHTML(r.cuisine)}</span>
+      </div>
+      <p class="world-desc">${escapeHTML(r.desc)}</p>
+      <div class="tags" style="margin-bottom:12px;">${r.tags.map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join("")}</div>
+      <div class="world-actions">
+        <button class="btn primary" data-wid="${escapeHTML(r.id)}" data-action="wview" style="flex:1;">Ver receta</button>
+        <button class="btn green" data-wid="${escapeHTML(r.id)}" data-action="wadd">➕</button>
+      </div>
+    </article>`).join("") + (total > visible.length ? `
+    <div class="world-load-more">
+      <button class="btn world" id="worldLoadMoreBtn">Mostrar ${Math.min(WORLD_PAGE_SIZE, total - visible.length).toLocaleString("es-ES")} recetas más</button>
+    </div>` : "");
+
+  els.worldGrid.querySelectorAll("[data-action='wview']").forEach(btn =>
+    btn.addEventListener("click", () => openWorldDetail(btn.dataset.wid)));
+  els.worldGrid.querySelectorAll("[data-action='wadd']").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const wr = getWorldRecipeById(btn.dataset.wid);
+      if (wr) saveWorldRecipeToMine(wr);
+    }));
+  const loadMore = document.getElementById("worldLoadMoreBtn");
+  if (loadMore) loadMore.addEventListener("click", () => {
+    worldVisibleLimit += WORLD_PAGE_SIZE;
+    renderWorldGrid();
+  });
+}
+
+function openWorldDetail(wid) {
+  const wr = getWorldRecipeById(wid); if (!wr) return;
+  currentWorldRecipe = wr;
+  els.worldDetailTitle.textContent = `${wr.flag} ${wr.name}`;
+  els.worldDetailBody.innerHTML = `
+    <div class="meta" style="margin-bottom:14px;">
+      <span class="pill">📂 ${escapeHTML(wr.cuisine)}</span>
+      <span class="pill">⏱ ${escapeHTML(wr.time)}</span>
+      <span class="pill">🔥 ${escapeHTML(wr.diff)}</span>
+    </div>
+    <p style="color:var(--muted);margin:0 0 16px;line-height:1.6;">${escapeHTML(wr.desc)}</p>
+    <div class="tags" style="margin-bottom:16px;">${wr.tags.map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join("")}</div>
+    <h3>Ingredientes</h3>
+    <ul class="ingredients-list">
+      ${wr.ingredients.map(i => `<li>${smartIngredientText({ cantidad: i.c, unidad: i.u, ingrediente: i.i })}</li>`).join("")}
+    </ul>
+    <h3 style="margin-top:18px;">Preparación</h3>
+    <ol class="steps-list">${wr.steps.map(s => `<li>${escapeHTML(s)}</li>`).join("")}</ol>`;
+  els.worldDetailModal.classList.add("open");
+}
+
+function addWorldRecipeToMine() { if (currentWorldRecipe) saveWorldRecipeToMine(currentWorldRecipe); }
+
+function saveWorldRecipeToMine(wr) {
+  const already = recipes.find(r => r.nombre === wr.name);
+  if (already) { showToast(`"${wr.name}" ya está en tu recetario.`); return; }
+  const now = new Date().toISOString();
+  const cat = categories.includes(wr.cuisine) ? wr.cuisine : (categories.includes("Otros") ? "Otros" : categories[0]);
+  const recipe = {
+    id: createId(), nombre: wr.name, categoria: cat,
+    dificultad: wr.diff, tiempo: wr.time, raciones: 4, imagen: "",
+    ingredientes: wr.ingredients.map(i => ({ cantidad: i.c, unidad: i.u, ingrediente: i.i })),
+    pasos: wr.steps,
+    notas: `Receta de la cocina ${wr.cuisine}. Guardada desde el catálogo mundial.`,
+    etiquetas: [...wr.tags, wr.cuisine.toLowerCase()],
+    favorita: false, createdAt: now, updatedAt: now
+  };
+  recipes.unshift(recipe); saveRecipes(); render();
+  showToast(`✅ "${wr.name}" añadida a tu recetario.`);
+  els.worldDetailModal.classList.remove("open");
+}
+
+function cookWorldRecipeNow() {
+  if (!currentWorldRecipe) return;
+  const wr = currentWorldRecipe;
+  currentCookRecipe = { nombre: wr.name, pasos: wr.steps };
+  currentCookStep = 0;
+  els.cookTitle.textContent = `Modo cocina · ${wr.name}`;
+  els.worldDetailModal.classList.remove("open");
+  els.worldModal.classList.remove("open");
+  els.cookModal.classList.add("open");
+  stopTimer(); renderCookStep();
+}
+
+/* ════════════════════════════════════════
+   ¿QUÉ COCINO HOY? — SUGERIDOR
+════════════════════════════════════════ */
+function openInspireModal() {
+  els.inspireResult.innerHTML = "";
+  els.inspireModal.classList.add("open");
+}
+
+function parseTimeToMin(tiempo) {
+  if (!tiempo) return null;
+  const m = String(tiempo).match(/(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+
+function buildCandidates() {
+  const source     = els.inspireSource.value;
+  const diff       = els.inspireDiff.value;
+  const timeVal    = els.inspireTime.value;
+  const ingredient = normalizeText(els.inspireIngredient.value);
+
+  const timeFn = timeVal === "quick"  ? t => t !== null && t <= 20
+               : timeVal === "medium" ? t => t !== null && t > 20 && t <= 45
+               : timeVal === "long"   ? t => t !== null && t > 45
+               : () => true;
+
+  const candidates = [];
+
+  if (source === "all" || source === "mine") {
+    recipes.forEach(r => {
+      if (diff && r.dificultad !== diff) return;
+      const tmin = parseTimeToMin(r.tiempo);
+      if (!timeFn(tmin)) return;
+      if (ingredient) {
+        const hay = normalizeText((r.ingredientes || []).map(i => i.ingrediente).join(" "));
+        if (!hay.includes(ingredient)) return;
+      }
+      candidates.push({ type: "mine", r });
+    });
+  }
+
+  if (source === "all" || source === "world") {
+    WORLD_RECIPES.forEach(wr => {
+      if (diff && wr.diff !== diff) return;
+      if (!timeFn(wr.timeMin)) return;
+      if (ingredient) {
+        const hay = normalizeText(wr.ingredients.map(i => i.i).join(" "));
+        if (!hay.includes(ingredient)) return;
+      }
+      candidates.push({ type: "world", wr });
+    });
+    addMegaCandidates(candidates, diff, timeFn, ingredient);
+  }
+
+  return candidates;
+}
+
+function surpriseMe() {
+  const candidates = buildCandidates();
+  if (!candidates.length) { renderInspireNone(); return; }
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  renderInspireResult([pick], true);
+}
+
+function findRecipes() {
+  const candidates = buildCandidates();
+  if (!candidates.length) { renderInspireNone(); return; }
+  const shuffled = [...candidates].sort(() => Math.random() - 0.5).slice(0, 6);
+  renderInspireResult(shuffled, false);
+}
+
+function renderInspireNone() {
+  els.inspireResult.innerHTML = `
+    <div class="inspire-none">
+      <span class="empty-icon">🤷</span>
+      <p>No encontramos recetas con esos filtros.<br>Prueba a ser menos estricto o explora las Cocinas del mundo.</p>
+    </div>`;
+}
+
+function renderInspireResult(candidates, single) {
+  els.inspireResult.innerHTML =
+    `<h3 style="margin:16px 0 10px;">${single ? "✨ Tu propuesta para hoy:" : "🍽️ Aquí tienes ideas:"}</h3>` +
+    candidates.map(c => {
+      if (c.type === "mine") {
+        const r = c.r;
+        return `<div class="inspire-result">
+          ${safeImageSrc(r.imagen) ? `<img src="${escapeHTML(safeImageSrc(r.imagen))}" alt="${escapeHTML(r.nombre)}" style="width:100%;max-height:130px;object-fit:cover;border-radius:12px;margin-bottom:10px;" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ""}
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+            <h3 style="margin:0;">${escapeHTML(r.nombre)}</h3>
+            <span class="pill">📚 Mi receta</span>
+          </div>
+          <div class="meta" style="margin:8px 0;">
+            <span class="pill">⏱ ${escapeHTML(r.tiempo || "—")}</span>
+            <span class="pill">🔥 ${escapeHTML(r.dificultad)}</span>
+            <span class="pill">📂 ${escapeHTML(r.categoria)}</span>
+          </div>
+          <div class="card-actions" style="margin-top:10px;">
+            <button class="btn primary" data-inspire-action="view-mine" data-id="${escapeHTML(r.id)}">Ver receta</button>
+            <button class="btn green" data-inspire-action="cook-mine" data-id="${escapeHTML(r.id)}">👨‍🍳 Cocinar ahora</button>
+          </div>
+        </div>`;
+      } else {
+        const wr = c.wr;
+        return `<div class="inspire-result">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+            <h3 style="margin:0;">${escapeHTML(wr.flag)} ${escapeHTML(wr.name)}</h3>
+            <span class="pill">🌍 ${escapeHTML(wr.cuisine)}</span>
+          </div>
+          <div class="meta" style="margin:8px 0;">
+            <span class="pill">⏱ ${escapeHTML(wr.time)}</span>
+            <span class="pill">🔥 ${escapeHTML(wr.diff)}</span>
+          </div>
+          <p style="color:var(--muted);font-size:.9rem;margin:6px 0 12px;line-height:1.5;">${escapeHTML(wr.desc)}</p>
+          <div class="card-actions">
+            <button class="btn world" data-inspire-action="view-world" data-id="${escapeHTML(wr.id)}">Ver receta completa</button>
+            <button class="btn primary" data-inspire-action="add-world" data-id="${escapeHTML(wr.id)}">➕ Guardar en mi recetario</button>
+          </div>
+        </div>`;
+      }
+    }).join("");
+  bindInspireActions();
+}
+
+function bindInspireActions() {
+  els.inspireResult.querySelectorAll("[data-inspire-action]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const action = btn.dataset.inspireAction;
+      const id = btn.dataset.id;
+      if (action === "view-mine") { els.inspireModal.classList.remove("open"); showDetail(id); }
+      else if (action === "cook-mine") { els.inspireModal.classList.remove("open"); openCookMode(id); }
+      else if (action === "view-world") { els.inspireModal.classList.remove("open"); openWorldModal(); openWorldDetail(id); }
+      else if (action === "add-world") { const wr = getWorldRecipeById(id); if (wr) saveWorldRecipeToMine(wr); }
+    });
+  });
+}
+
+/* ─── EXPORTAR / IMPORTAR ─── */
+function exportJSON() {
+  downloadBlob(new Blob([JSON.stringify(recipes, null, 2)], { type: "application/json" }), `mi-recetario-pro-backup-${formatDateForFile()}.json`);
+  lastBackupAt = new Date().toISOString();
+  dbSet(BACKUP_KEY, lastBackupAt);
+  checkBackupReminder(); showToast("Backup JSON descargado.");
+}
+function exportTXT() {
+  if (!recipes.length) { showToast("No hay recetas para exportar."); return; }
+  const lines = ["MI RECETARIO PRO", "Exportado el: " + new Date().toLocaleString("es-ES"), ""];
+  recipes.forEach(r => { lines.push(recipeToPlainText(r)); lines.push("", ""); });
+  downloadBlob(new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" }), `mi-recetario-recetas-${formatDateForFile()}.txt`);
+  showToast("TXT descargado.");
+}
+function importJSON(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      if (!Array.isArray(imported)) throw new Error("El archivo no contiene un array de recetas.");
+      const cleaned = imported.filter(r => r && typeof r === "object" && r.nombre).map(cleanImportedRecipe).filter(r => r.nombre);
+      if (!cleaned.length) throw new Error("No se encontraron recetas válidas.");
+      if (recipes.length > 0)
+        downloadBlob(new Blob([JSON.stringify(recipes, null, 2)], { type: "application/json" }), `backup-antes-importar-${formatDateForFile()}.json`);
+      const replace = confirm(`Se encontraron ${cleaned.length} recetas.\n¿Sustituir tu recetario completo?\n(Cancelar para añadir sin borrar)`);
+      if (replace) { recipes = cleaned; showToast(`Recetario sustituido con ${cleaned.length} recetas.`); }
+      else { const before = recipes.length; recipes = mergeRecipes(recipes, cleaned); showToast(`${recipes.length - before} recetas nuevas importadas.`); }
+      saveRecipes(); render(); els.detailView.innerHTML = "";
+    } catch (e) { showToast("Error al importar: " + (e.message || "Archivo no válido.")); }
+    finally { els.importFile.value = ""; }
+  };
+  reader.readAsText(file);
+}
+function cleanImportedRecipe(r) {
+  const now = new Date().toISOString();
+  return {
+    id: normalizeRecipeId(r.id), nombre: String(r.nombre || "").trim(),
+    categoria: categories.includes(r.categoria) ? r.categoria : "Otros",
+    dificultad: ["Fácil", "Media", "Difícil"].includes(r.dificultad) ? r.dificultad : "Fácil",
+    tiempo: String(r.tiempo || "").trim(), raciones: Math.max(1, Number(r.raciones) || 1),
+    imagen: typeof r.imagen === "string" ? safeImageSrc(r.imagen) : "",
+    ingredientes: Array.isArray(r.ingredientes)
+      ? r.ingredientes.filter(i => i && (i.ingrediente || i.nombre))
+          .map(i => normalizeIngredientForStorage({ cantidad: i.cantidad, unidad: i.unidad || "", ingrediente: i.ingrediente || i.nombre || "" }))
+      : [],
+    pasos: Array.isArray(r.pasos) ? r.pasos.map(String) : [],
+    notas: String(r.notas || "").trim(),
+    etiquetas: Array.isArray(r.etiquetas) ? r.etiquetas.map(String) : [],
+    favorita: Boolean(r.favorita), createdAt: r.createdAt || now, updatedAt: now
+  };
+}
+function mergeRecipes(current, imported) {
+  const ids = new Set(current.map(r => r.id));
+  return [...imported.map(r => ids.has(r.id) ? { ...r, id: createId() } : r), ...current];
+}
+
+/* ─── BACKUP REMINDER ─── */
+function checkBackupReminder() {
+  const last = lastBackupAt;
+  if (!last && recipes.length > 0) { els.backupNotice.classList.add("show"); $("#backupNoticeText").textContent = "Aún no has hecho backup JSON."; return; }
+  if (!last) return;
+  const days = Math.floor((Date.now() - new Date(last).getTime()) / 86400000);
+  if (days >= 30) { els.backupNotice.classList.add("show"); $("#backupNoticeText").textContent = `Hace ${days} días sin backup JSON.`; }
+  else els.backupNotice.classList.remove("show");
+}
+
+/* ─── EJEMPLOS ─── */
+function loadExamples() {
+  if (recipes.length && !confirm("Esto añadirá recetas de ejemplo. ¿Continuar?")) return;
+  const now = new Date().toISOString();
+  const examples = [
+    { id:createId(), nombre:"Tortilla cremosa de patata", categoria:"Cenas rápidas", dificultad:"Media", tiempo:"35 min", raciones:2, imagen:"",
+      ingredientes:[{cantidad:4,unidad:"ud",ingrediente:"huevos"},{cantidad:3,unidad:"ud",ingrediente:"patatas medianas"},{cantidad:1,unidad:"ud",ingrediente:"cebolla"},{cantidad:120,unidad:"ml",ingrediente:"aceite de oliva"},{cantidad:1,unidad:"pizca",ingrediente:"sal"}],
+      pasos:["Pela y corta las patatas en láminas finas.","Pocha la patata y la cebolla a fuego medio 20 min.","Bate los huevos con sal.","Mezcla con la patata y deja reposar 5 min.","Cuaja la tortilla por ambos lados, dejando el centro cremoso."],
+      notas:"Queda mejor si el huevo no se cocina en exceso.", etiquetas:["clásico","rápido","sartén"], favorita:true, createdAt:now, updatedAt:now },
+    { id:createId(), nombre:"Pasta con salsa de tomate asado", categoria:"Primeros", dificultad:"Fácil", tiempo:"40 min", raciones:4, imagen:"",
+      ingredientes:[{cantidad:400,unidad:"g",ingrediente:"pasta"},{cantidad:700,unidad:"g",ingrediente:"tomates maduros"},{cantidad:3,unidad:"dientes",ingrediente:"ajo"},{cantidad:30,unidad:"ml",ingrediente:"aceite de oliva"},{cantidad:1,unidad:"cucharadita",ingrediente:"orégano"},{cantidad:1,unidad:"pizca",ingrediente:"sal"}],
+      pasos:["Asa los tomates con ajo, aceite y orégano a 200 ºC 25 min.","Cuece la pasta al dente.","Tritura los tomates asados.","Mezcla la pasta con la salsa y sirve."],
+      notas:"Añade parmesano o albahaca al servir.", etiquetas:["vegetariana","horno","fácil"], favorita:false, createdAt:now, updatedAt:now },
+    { id:createId(), nombre:"Bizcocho de yogur familiar", categoria:"Postres", dificultad:"Fácil", tiempo:"55 min", raciones:8, imagen:"",
+      ingredientes:[{cantidad:1,unidad:"ud",ingrediente:"yogur natural"},{cantidad:3,unidad:"ud",ingrediente:"huevos"},{cantidad:2,unidad:"medidas",ingrediente:"azúcar"},{cantidad:3,unidad:"medidas",ingrediente:"harina"},{cantidad:1,unidad:"medida",ingrediente:"aceite suave"},{cantidad:1,unidad:"sobre",ingrediente:"levadura química"}],
+      pasos:["Precalienta el horno a 180 ºC.","Bate huevos, yogur, azúcar y aceite.","Añade harina y levadura tamizadas.","Vierte en molde engrasado.","Hornea 35 min hasta que el palillo salga limpio."],
+      notas:"Usa el vaso del yogur como medida.", etiquetas:["familiar","dulce","horno"], favorita:false, createdAt:now, updatedAt:now }
+  ];
+  recipes = [...examples, ...recipes]; saveRecipes(); render(); checkBackupReminder(); showToast("Recetas de ejemplo cargadas.");
+}
+
+/* ─── IMAGEN ─── */
+function handleImageInput(event) {
+  const file = event.target.files[0]; selectedImageData = ""; if (!file) return;
+  if (!/^image\/(png|jpe?g|webp|gif)$/i.test(file.type)) { showToast("Formato no válido. Usa JPG, PNG, WebP o GIF."); els.imageInput.value = ""; return; }
+  if (file.size > 5_000_000) showToast("⚠️ Imagen muy grande. Se comprimirá.");
+  else if (file.size > 900_000) showToast("Imagen grande. Se comprimirá para ahorrar espacio.");
+  const reader = new FileReader();
+  reader.onload = () => resizeImage(reader.result, 900, 0.82).then(data => {
+    if (!safeImageSrc(data)) { showToast("No se pudo preparar la imagen."); return; }
+    selectedImageData = data; els.imageUrlInput.value = ""; showToast("Imagen cargada y comprimida.");
+  });
+  reader.onerror = () => showToast("No se pudo leer la imagen.");
+  reader.readAsDataURL(file);
+}
+function resizeImage(dataUrl, maxSize, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale); canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => { showToast("La imagen no se pudo procesar."); resolve(""); };
+    img.src = dataUrl;
+  });
+}
+
+/* ─── PWA ─── */
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js")
+        .then(reg => { if (reg.waiting) showToast("Nueva versión disponible. Cierra y vuelve a abrir."); })
+        .catch(() => console.warn("[SW] No registrado."));
+    });
+  }
+}
+function setupPwaInstall() {
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault(); deferredInstallPrompt = e;
+    els.installBtn.hidden = false; els.pwaNotice.classList.add("show");
+    els.pwaNoticeText.textContent = "Puedes instalar Mi Recetario PRO en este dispositivo.";
+  });
+  els.installBtn.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null; els.installBtn.hidden = true;
+  });
+  window.addEventListener("appinstalled", () => { els.pwaNotice.classList.remove("show"); showToast("App instalada correctamente."); });
+}
+
+/* ─── UTILS ─── */
+function normalizeText(t) {
+  return String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+function escapeHTML(v) {
+  return String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function safeImageSrc(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^data:image\/(png|jpe?g|webp|gif);base64,[a-z0-9+/=\s]+$/i.test(raw)) return raw;
+  if (raw.startsWith("blob:")) return raw;
+  try {
+    const url = new URL(raw, window.location.href);
+    if (url.origin === window.location.origin && (url.protocol === "http:" || url.protocol === "https:" || url.protocol === "file:")) return url.href;
+  } catch {}
+  return "";
+}
+function getCanvasSafeImageSrc(value) {
+  const src = safeImageSrc(value);
+  if (!src) return "";
+  if (src.startsWith("data:image/") || src.startsWith("blob:")) return src;
+  try { return new URL(src, window.location.href).origin === window.location.origin ? src : ""; }
+  catch { return ""; }
+}
+function parseLines(v)  { return String(v || "").split("\n").map(l => l.trim()).filter(Boolean); }
+function parseTags(v)   { return String(v || "").split(",").map(t => t.trim()).filter(Boolean); }
+function formatDate(d)  { if (!d) return ""; try { return new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" }).format(new Date(d)); } catch { return ""; } }
+function formatDateForFile() { return new Date().toISOString().slice(0, 10); }
+function formatAmount(v) { const r = Math.round((Number(v) + Number.EPSILON) * 100) / 100; return Number.isInteger(r) ? String(r) : String(r).replace(".", ","); }
+function slug(name) { return name.replace(/[^a-z0-9áéíóúüñ\s-]/gi, "").replace(/\s+/g, "-").toLowerCase(); }
+function downloadBlob(blob, filename) { const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
+function showToast(msg) { els.toast.textContent = msg; els.toast.classList.add("show"); clearTimeout(showToast._t); showToast._t = setTimeout(() => els.toast.classList.remove("show"), 3500); }
+
+/* ─── ARRANQUE ─── */
+init().catch(err => {
+  console.error("Error crítico al iniciar Mi Recetario PRO", err);
+  document.body.insertAdjacentHTML("afterbegin", `<div style="margin:16px;padding:16px;border-radius:14px;background:#fff3df;color:#2d241c;border:1px solid #c46a32;font-family:system-ui,sans-serif;">No se pudo iniciar la app. Revisa la consola o restaura desde un backup JSON.</div>`);
+});
+</script>
+</body>
+</html>
